@@ -54,4 +54,9 @@ export class BookmarkService {
     form.append('file', file);
     return this.http.post<BookmarkImportResult>(`${this.baseUrl}/import`, form);
   }
+
+  /** Export active bookmarks to Chrome HTML format. */
+  exportToChrome(): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/export`, { responseType: 'blob' });
+  }
 }

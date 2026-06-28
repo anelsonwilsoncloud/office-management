@@ -30,6 +30,7 @@ public class SqliteSchemaMigrator implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         ensureColumn("bookmarks", "archived", "INTEGER NOT NULL DEFAULT 0");
+        ensureColumn("bookmarks", "folder", "TEXT");
         ensureColumn("todos", "archived", "INTEGER NOT NULL DEFAULT 0");
     }
 

@@ -12,6 +12,8 @@ public class BookmarkRequest {
 
     private String additionalInfo;
 
+    private String folder;
+
     public String getName() {
         return name;
     }
@@ -34,5 +36,13 @@ public class BookmarkRequest {
 
     public void setAdditionalInfo(String additionalInfo) {
         this.additionalInfo = additionalInfo;
+    }
+
+    public String getFolder() {
+        return folder;
+    }
+
+    public void setFolder(String folder) {
+        this.folder = folder;
     }
 }

@@ -3,6 +3,7 @@ export interface Bookmark {
   name: string;
   url: string;
   additionalInfo?: string | null;
+  folder?: string | null;
   archived?: boolean;
 }
 
@@ -10,6 +11,7 @@ export interface BookmarkRequest {
   name: string;
   url: string;
   additionalInfo?: string | null;
+  folder?: string | null;
 }
 
 export type Priority = 'LOW' | 'MEDIUM' | 'HIGH';

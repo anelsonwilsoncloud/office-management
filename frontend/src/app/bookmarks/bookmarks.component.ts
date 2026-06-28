@@ -78,7 +78,8 @@ export class BookmarksComponent implements OnInit {
     this.form = {
       name: bookmark.name,
       url: bookmark.url,
-      additionalInfo: bookmark.additionalInfo ?? ''
+      additionalInfo: bookmark.additionalInfo ?? '',
+      folder: bookmark.folder ?? ''
     };
   }
 
@@ -161,6 +162,21 @@ export class BookmarksComponent implements OnInit {
   }
 
   private emptyForm(): BookmarkRequest {
-    return { name: '', url: '', additionalInfo: '' };
+    return { name: '', url: '', additionalInfo: '', folder: '' };
+  }
+
+  exportBookmarks(): void {
+    this.error = '';
+    this.service.exportToChrome().subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'bookmarks.html';
+        a.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: () => (this.error = 'Failed to export bookmarks')
+    });
   }
 }

@@ -24,6 +24,9 @@ public class Bookmark {
     @Column(name = "additional_info")
     private String additionalInfo;
 
+    @Column(name = "folder")
+    private String folder;
+
     @Column(nullable = false)
     private boolean archived = false;
 
@@ -57,6 +60,14 @@ public class Bookmark {
 
     public void setAdditionalInfo(String additionalInfo) {
         this.additionalInfo = additionalInfo;
+    }
+
+    public String getFolder() {
+        return folder;
+    }
+
+    public void setFolder(String folder) {
+        this.folder = folder;
     }
 
     public boolean isArchived() {

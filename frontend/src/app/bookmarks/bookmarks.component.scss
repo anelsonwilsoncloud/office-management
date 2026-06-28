@@ -45,6 +45,15 @@
   }
 }
 
+.export-btn {
+  background: #f0fff4;
+  border-color: #a0d4b0;
+  color: #1a7a38;
+  &:hover {
+    background: #dcffe8;
+  }
+}
+
 .import-msg {
   color: #1a6a35;
   background: #eafaf0;
@@ -52,5 +61,11 @@
   border-radius: 4px;
   padding: 0.45rem 0.8rem;
   margin-top: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.folder-cell {
+  color: #5f6368;
+  font-style: italic;
   font-size: 0.9rem;
 }
