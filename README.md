@@ -75,8 +75,24 @@ A colleague only needs Docker installed — no source code required:
 docker pull ghcr.io/anelsonwilsoncloud/office-management:latest
 
 # Run it (database stored in ./office-data on their machine)
-docker run -p 8080:8080 -v ${PWD}/office-data:/data ghcr.io/anelsonwilsoncloud/office-management:latest
+docker run -d --name office-management -p 8080:8080 \
+  -v ${PWD}/office-data:/data \
+  ghcr.io/anelsonwilsoncloud/office-management:latest
 ```
+
+**Windows PowerShell:**
+```powershell
+docker run -d --name office-management -p 8080:8080 `
+  -v C:\path\to\your\office-data:/data `
+  ghcr.io/anelsonwilsoncloud/office-management:latest
+```
+
+**Docker Desktop UI:** When running via the UI, configure the volume mapping in two **separate** fields:
+- **Host path:** `C:\path\to\your\office-data` (full Windows path to where you want your database)
+- **Container path:** `/data`
+
+> ⚠️ **Common mistake:** Do NOT enter `/office-data:/data` in the Host path field. That syntax is for CLI only.
+> The Host path should be the **full path on your machine**, e.g., `C:\Users\yourname\office-data`.
 
 Then open <http://localhost:8080>.
 
@@ -88,6 +104,27 @@ docker compose up --build
 ### Moving to a new PC
 Just copy the **`office-data`** folder (it contains `office.db`) to the new machine
 and start the container there. All your bookmarks and todos come with you.
+
+### Upgrading to a new version
+When a new version of the app is released, your existing database is **automatically preserved**:
+
+```bash
+# Pull the new image
+docker pull ghcr.io/anelsonwilsoncloud/office-management:latest
+
+# Stop and remove the old container
+docker stop office-management && docker rm office-management
+
+# Start with the SAME office-data path — your data is intact
+docker run -d --name office-management -p 8080:8080 \
+  -v ${PWD}/office-data:/data \
+  ghcr.io/anelsonwilsoncloud/office-management:latest
+```
+
+**Why your data is safe:**
+- The database file lives **on your machine** in `office-data/`, not inside the Docker image
+- Hibernate uses `ddl-auto=update` which only **adds** missing columns, never drops or overwrites data
+- The `SqliteSchemaMigrator` safely migrates old databases by adding new columns with safe defaults
 
 ### Backup
 Copy `office-data/office.db` anywhere (USB, cloud). That single file is your whole DB.
