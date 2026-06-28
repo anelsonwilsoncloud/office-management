@@ -40,7 +40,7 @@ public class BookmarkController {
         String[] words = search.trim().toLowerCase().split("\\s+");
         return all.stream()
                 .filter(b -> matchesAllWords(
-                        b.getName() + " " + (b.getAdditionalInfo() == null ? "" : b.getAdditionalInfo()),
+                        b.getName() + " " + b.getUrl() + " " + (b.getAdditionalInfo() == null ? "" : b.getAdditionalInfo()),
                         words))
                 .collect(java.util.stream.Collectors.toList());
     }
