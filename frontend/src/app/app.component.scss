@@ -1,0 +1,39 @@
+﻿.app-header {
+  margin-bottom: 1rem;
+  h1 {
+    margin: 0;
+    font-size: 1.6rem;
+    color: #202124;
+  }
+  .tagline {
+    margin: 0.25rem 0 0;
+    color: #5f6368;
+    font-size: 0.9rem;
+  }
+}
+
+.tabs {
+  display: flex;
+  gap: 0.25rem;
+  border-bottom: 2px solid #e0e0e0;
+  margin-bottom: 1.25rem;
+
+  button {
+    border: none;
+    background: transparent;
+    padding: 0.6rem 1.1rem;
+    font-size: 0.95rem;
+    cursor: pointer;
+    color: #5f6368;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+  }
+  button.active {
+    color: #1a73e8;
+    border-bottom-color: #1a73e8;
+    font-weight: 600;
+  }
+  button:hover {
+    color: #202124;
+  }
+}

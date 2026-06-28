@@ -1,0 +1,19 @@
+# Build artifacts
+backend/target/
+frontend/dist/
+frontend/.angular/cache/
+frontend/node_modules/
+
+# Local SQLite database (personal data — keep out of git)
+office-data/
+backend/data/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# IDE / OS
+.idea/
+*.iml
+.DS_Store
+Thumbs.db

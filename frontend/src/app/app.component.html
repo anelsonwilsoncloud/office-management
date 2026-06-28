@@ -1,0 +1,18 @@
+﻿<header class="app-header">
+  <h1>Office Management</h1>
+  <p class="tagline">Track your bookmarks &amp; todos &mdash; fast search, more productivity.</p>
+</header>
+
+<nav class="tabs">
+  <button type="button" [class.active]="activeTab === 'bookmarks'" (click)="select('bookmarks')">
+    Bookmark Search
+  </button>
+  <button type="button" [class.active]="activeTab === 'todos'" (click)="select('todos')">
+    Todos
+  </button>
+</nav>
+
+<main class="content">
+  <app-bookmarks *ngIf="activeTab === 'bookmarks'"></app-bookmarks>
+  <app-todos *ngIf="activeTab === 'todos'"></app-todos>
+</main>

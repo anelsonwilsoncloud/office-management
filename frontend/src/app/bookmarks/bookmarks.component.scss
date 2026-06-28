@@ -1,0 +1,56 @@
+.url-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  a {
+    color: #1a73e8;
+    text-decoration: none;
+    word-break: break-all;
+  }
+  a:hover {
+    text-decoration: underline;
+  }
+}
+
+.icon-btn {
+  border: 1px solid #cdd3da;
+  background: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 0 0.4rem;
+  line-height: 1.4rem;
+  font-size: 0.95rem;
+}
+.icon-btn:hover {
+  background: #f1f3f4;
+}
+
+.import-sep {
+  color: #888;
+  font-size: 0.85rem;
+  padding: 0 0.25rem;
+}
+
+.import-btn {
+  background: #f0f4ff;
+  border-color: #a0b4e8;
+  color: #1a4db8;
+  &:hover:not(:disabled) {
+    background: #dce8ff;
+  }
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.import-msg {
+  color: #1a6a35;
+  background: #eafaf0;
+  border: 1px solid #a8dbb8;
+  border-radius: 4px;
+  padding: 0.45rem 0.8rem;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+}

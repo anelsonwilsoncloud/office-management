@@ -1,0 +1,17 @@
+services:
+  office-management:
+    build: .
+    image: office-management:latest
+    container_name: office-management
+    ports:
+      - "8080:8080"
+    environment:
+      # Path *inside* the container where the SQLite file is stored.
+      OFFICE_DB_PATH: /data/office.db
+    volumes:
+      # HOST bind mount: your database file lives on your machine at ./office-data.
+      # Because this is a bind mount (not a named volume), running
+      # `docker volume prune` or removing the container/image NEVER deletes it.
+      # To move PCs: just copy the ./office-data folder.
+      - ./office-data:/data
+    restart: unless-stopped

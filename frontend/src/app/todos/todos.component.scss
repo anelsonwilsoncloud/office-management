@@ -1,0 +1,61 @@
+.todo-form {
+  .wide {
+    grid-column: span 2;
+  }
+  .checkbox {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.4rem;
+    span {
+      margin: 0;
+    }
+  }
+}
+
+.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+.sort-ind {
+  font-size: 0.75rem;
+  margin-left: 0.25rem;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #fff;
+}
+.badge.low {
+  background: #34a853;
+}
+.badge.medium {
+  background: #f9ab00;
+}
+.badge.high {
+  background: #ea4335;
+}
+
+.status {
+  margin-left: 0.4rem;
+  font-size: 0.8rem;
+  color: #5f6368;
+}
+
+.done-row td {
+  color: #9aa0a6;
+  text-decoration: line-through;
+}
+.done-row .badge {
+  opacity: 0.6;
+}
+
+.overdue {
+  color: #ea4335;
+}
+.upcoming {
+  color: #1a73e8;
+}

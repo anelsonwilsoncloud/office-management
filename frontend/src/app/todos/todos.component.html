@@ -1,0 +1,174 @@
+<section class="panel" *ngIf="view === 'active'">
+  <h2>Add Todo</h2>
+  <form class="form-grid todo-form" (ngSubmit)="save()">
+    <label>
+      <span>Todo Name</span>
+      <input type="text" name="name" [(ngModel)]="form.name" placeholder="What needs doing?" />
+    </label>
+    <label>
+      <span>Date</span>
+      <input type="date" name="date" [(ngModel)]="form.date" />
+    </label>
+    <label>
+      <span>Priority</span>
+      <select name="priority" [(ngModel)]="form.priority">
+        <option *ngFor="let p of priorities" [value]="p">{{ p | titlecase }}</option>
+      </select>
+    </label>
+    <label class="wide">
+      <span>Description</span>
+      <input type="text" name="description" [(ngModel)]="form.description"
+             placeholder="Any details" />
+    </label>
+    <label class="checkbox">
+      <input type="checkbox" name="accomplished" [(ngModel)]="form.accomplished" />
+      <span>Accomplished</span>
+    </label>
+    <div class="actions">
+      <button type="submit" class="btn primary">{{ editingId === null ? 'Save' : 'Update' }}</button>
+      <button *ngIf="editingId !== null" type="button" class="btn" (click)="resetForm()">Cancel</button>
+    </div>
+  </form>
+  <p class="error" *ngIf="error">{{ error }}</p>
+</section>
+
+<section class="panel">
+  <div class="panel-head">
+    <h2>{{ view === 'archived' ? 'Archived Todos' : 'All Todos' }}</h2>
+    <div class="head-tools">
+      <div class="seg">
+        <button type="button" [class.active]="view === 'active'" (click)="setView('active')">Active</button>
+        <button type="button" [class.active]="view === 'archived'" (click)="setView('archived')">Archived</button>
+      </div>
+      <div class="filters" *ngIf="view === 'active'">
+        <input class="search" type="search" name="todoSearch" [(ngModel)]="search"
+               (ngModelChange)="loadMain()" placeholder="Search by name..." />
+        <select name="accFilter" [(ngModel)]="accomplishedFilter" (ngModelChange)="loadMain()">
+          <option value="all">All</option>
+          <option value="false">Pending</option>
+          <option value="true">Accomplished</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Active todos -->
+  <div class="grid-scroll" *ngIf="view === 'active'">
+    <table class="grid">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th class="sortable" (click)="togglePrioritySort()">
+            Priority
+            <span class="sort-ind" *ngIf="prioritySort">{{ prioritySort === 'asc' ? '▲' : '▼' }}</span>
+          </th>
+          <th>Description</th>
+          <th>Date</th>
+          <th>Accomplished</th>
+          <th class="col-actions">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let t of todos" [class.done-row]="t.accomplished">
+          <td>{{ t.name }}</td>
+          <td><span class="badge" [ngClass]="t.priority.toLowerCase()">{{ t.priority | titlecase }}</span></td>
+          <td>{{ t.description }}</td>
+          <td>{{ t.date }}</td>
+          <td>
+            <input type="checkbox" [checked]="t.accomplished" (change)="toggleAccomplished(t)" />
+            <span class="status">{{ t.accomplished ? 'Done' : 'Pending' }}</span>
+          </td>
+          <td class="col-actions">
+            <button type="button" class="btn small" (click)="edit(t)">Edit</button>
+            <button type="button" class="btn small danger" (click)="remove(t)">Delete</button>
+          </td>
+        </tr>
+        <tr *ngIf="todos.length === 0">
+          <td colspan="6" class="empty">No todos found.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Archived todos -->
+  <div class="grid-scroll" *ngIf="view === 'archived'">
+    <table class="grid">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Priority</th>
+          <th>Description</th>
+          <th>Date</th>
+          <th>Accomplished</th>
+          <th class="col-actions">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let t of archivedTodos">
+          <td>{{ t.name }}</td>
+          <td><span class="badge" [ngClass]="t.priority.toLowerCase()">{{ t.priority | titlecase }}</span></td>
+          <td>{{ t.description }}</td>
+          <td>{{ t.date }}</td>
+          <td>{{ t.accomplished ? 'Done' : 'Pending' }}</td>
+          <td class="col-actions">
+            <button type="button" class="btn small" (click)="restore(t)">Restore</button>
+            <button type="button" class="btn small danger" (click)="removePermanent(t)">Delete permanently</button>
+          </td>
+        </tr>
+        <tr *ngIf="archivedTodos.length === 0">
+          <td colspan="6" class="empty">No archived todos.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="panel" *ngIf="view === 'active'">
+  <h2 class="overdue">Past Pending Todos</h2>
+  <div class="grid-scroll">
+    <table class="grid">
+      <thead>
+        <tr>
+          <th>Name</th><th>Priority</th><th>Description</th><th>Date</th><th>Accomplished</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let t of pastPending">
+          <td>{{ t.name }}</td>
+          <td><span class="badge" [ngClass]="t.priority.toLowerCase()">{{ t.priority | titlecase }}</span></td>
+          <td>{{ t.description }}</td>
+          <td>{{ t.date }}</td>
+          <td>Pending</td>
+        </tr>
+        <tr *ngIf="pastPending.length === 0">
+          <td colspan="5" class="empty">No overdue todos. 🎉</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="panel" *ngIf="view === 'active'">
+  <h2 class="upcoming">Upcoming Pending Todos (next 5 days)</h2>
+  <div class="grid-scroll">
+    <table class="grid">
+      <thead>
+        <tr>
+          <th>Name</th><th>Priority</th><th>Description</th><th>Date</th><th>Accomplished</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let t of futurePending">
+          <td>{{ t.name }}</td>
+          <td><span class="badge" [ngClass]="t.priority.toLowerCase()">{{ t.priority | titlecase }}</span></td>
+          <td>{{ t.description }}</td>
+          <td>{{ t.date }}</td>
+          <td>Pending</td>
+        </tr>
+        <tr *ngIf="futurePending.length === 0">
+          <td colspan="5" class="empty">Nothing scheduled for the next 5 days.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>

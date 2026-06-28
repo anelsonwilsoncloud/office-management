@@ -1,0 +1,146 @@
+# Office Management
+
+A personal productivity app to track your **bookmarks** and **todos** in a fast,
+searchable database — so nothing gets lost and you stay productive.
+
+Share the Docker image with a colleague and they can run it in one command.
+
+## Tech stack
+
+| Layer    | Technology                                  |
+|----------|---------------------------------------------|
+| Frontend | Angular 18 (standalone components)          |
+| Backend  | Spring Boot 3 + Hibernate / JPA (REST API)  |
+| Database | **SQLite** — a single portable file         |
+| Packaging| Docker (multi-stage) + Docker Compose       |
+
+## Why SQLite? (the database decision)
+
+You wanted a database that is **a file**, **easy to transfer between PCs**, and that
+**survives Docker volume cleanup**. SQLite is the ideal fit:
+
+- 🗂️ **One portable file** (`office.db`). Move PCs by copying a single file.
+- 🛡️ **Survives `docker volume prune` / container & image removal** — because the file
+  is stored on a **host bind mount** (`./office-data` on your machine), *not* a Docker
+  named volume. Docker cleanup never touches your host folder.
+- ⚡ **No DB server, no passwords, smaller image** — simpler for colleagues.
+
+> In-memory databases were rejected because they lose data on restart.
+> Hibernate talks to SQLite via the community dialect
+> (`org.hibernate.community.dialect.SQLiteDialect`) + the `xerial` JDBC driver.
+
+## Features
+
+**Tab 1 — Bookmarks**
+- Add bookmarks: Name, URL, Additional Info
+- **Import from Chrome** — export bookmarks from Chrome (Bookmark Manager → Export),
+  then click "Import from Chrome" to bulk-load all your browser bookmarks at once.
+  Duplicate URLs are skipped automatically.
+- Grid with **multi-word search** across name and additional info
+  (e.g. searching `fux board` finds `FUX Scrum Board`)
+- Clickable URLs + **copy-to-clipboard** button per row
+- Full **Edit** and **Delete** (soft-delete → moves to Archived)
+- **Active / Archived toggle** — view archived bookmarks, restore them, or permanently
+  delete them from the database
+
+**Tab 2 — Todos**
+- Add todos: Name, Date (defaults to today), Priority (Low / Medium / High),
+  Description, Accomplished
+- Main grid with **multi-word search** across name and description,
+  **filter by status** (All / Pending / Accomplished), sortable Priority column
+- **Past Pending** grid — overdue, unaccomplished todos (due date < today)
+- **Upcoming Pending** grid — unaccomplished todos due in the next 5 days
+- Toggle "Accomplished" inline; full Edit and Delete (soft-delete → Archived)
+- **Active / Archived toggle** — view, restore, or permanently delete archived todos
+
+> Deleted records are **soft-deleted** (archived) by default, so your history is never
+> lost. Permanent removal is an explicit action available only inside the Archived view.
+
+## Run with Docker (recommended)
+
+```bash
+docker compose up --build
+```
+
+Then open <http://localhost:8080>.
+
+Your database is created at **`./office-data/office.db`** on your host machine.
+
+### Sharing with a colleague
+Either share this repo (they run `docker compose up --build`), or push the built
+image to a registry:
+
+```bash
+docker build -t office-management:latest .
+docker save office-management:latest -o office-management.tar   # hand over the .tar
+# colleague:
+docker load -i office-management.tar
+docker run -p 8080:8080 -v ${PWD}/office-data:/data office-management:latest
+```
+
+### Moving to a new PC
+Just copy the **`office-data`** folder (it contains `office.db`) to the new machine
+and start the container there. All your bookmarks and todos come with you.
+
+### Backup
+Copy `office-data/office.db` anywhere (USB, cloud). That single file is your whole DB.
+
+## Local development (without Docker)
+
+**Backend** (serves API on :8080, DB at `backend/data/office.db`):
+```bash
+cd backend
+mvn spring-boot:run
+```
+
+**Frontend** (dev server on :4200, proxies `/api` to :8080):
+```bash
+cd frontend
+npm install
+npm start
+```
+Open <http://localhost:4200>.
+
+## API reference
+
+### Bookmarks
+
+| Method | Endpoint                        | Description                                      |
+|--------|---------------------------------|--------------------------------------------------|
+| GET    | `/api/bookmarks?search=`        | List / multi-word search active bookmarks        |
+| GET    | `/api/bookmarks/archived`       | List archived bookmarks                          |
+| POST   | `/api/bookmarks`                | Create bookmark                                  |
+| POST   | `/api/bookmarks/import`         | Import bookmarks from a Chrome HTML export file  |
+| PUT    | `/api/bookmarks/{id}`           | Update bookmark                                  |
+| DELETE | `/api/bookmarks/{id}`           | Soft-delete (archive) a bookmark                 |
+| PUT    | `/api/bookmarks/{id}/restore`   | Restore an archived bookmark to active           |
+| DELETE | `/api/bookmarks/{id}/permanent` | Permanently delete a bookmark from the database  |
+
+### Todos
+
+| Method | Endpoint                        | Description                                        |
+|--------|---------------------------------|----------------------------------------------------|
+| GET    | `/api/todos?search=&accomplished=` | List / multi-word search / filter active todos  |
+| GET    | `/api/todos/archived`           | List archived todos                                |
+| GET    | `/api/todos/past-pending`       | Overdue unaccomplished todos                       |
+| GET    | `/api/todos/future-pending`     | Unaccomplished todos due in the next 5 days        |
+| POST   | `/api/todos`                    | Create todo                                        |
+| PUT    | `/api/todos/{id}`               | Update todo                                        |
+| DELETE | `/api/todos/{id}`               | Soft-delete (archive) a todo                       |
+| PUT    | `/api/todos/{id}/restore`       | Restore an archived todo to active                 |
+| DELETE | `/api/todos/{id}/permanent`     | Permanently delete a todo from the database        |
+
+## Project layout
+
+```
+office-management/
+├── backend/            Spring Boot + Hibernate REST API
+│   └── src/main/java/com/office/officemanagement/
+│       ├── config/     CORS config, SQLite schema migrator
+│       ├── bookmark/   Bookmark entity, repo, controller
+│       └── todo/       Todo entity, repo, controller
+├── frontend/           Angular app (Bookmarks & Todos tabs)
+├── Dockerfile          Multi-stage build (Angular + Spring Boot)
+├── docker-compose.yml  Runs the app with a host bind-mounted DB folder
+└── office-data/        Your SQLite database lives here (git-ignored)
+```

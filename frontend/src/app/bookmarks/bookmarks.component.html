@@ -1,0 +1,85 @@
+<section class="panel" *ngIf="view === 'active'">
+  <h2>Add Bookmark</h2>
+  <form class="form-grid" (ngSubmit)="save()">
+    <label>
+      <span>Bookmark Name</span>
+      <input type="text" name="name" [(ngModel)]="form.name" placeholder="e.g. Google" />
+    </label>
+    <label>
+      <span>URL</span>
+      <input type="text" name="url" [(ngModel)]="form.url" placeholder="https://..." />
+    </label>
+    <label>
+      <span>Additional Info</span>
+      <input type="text" name="additionalInfo" [(ngModel)]="form.additionalInfo"
+             placeholder="Any additional info" />
+    </label>
+    <div class="actions">
+      <button type="submit" class="btn primary">{{ editingId === null ? 'Save' : 'Update' }}</button>
+      <button *ngIf="editingId !== null" type="button" class="btn" (click)="resetForm()">Cancel</button>
+      <span class="import-sep">or</span>
+      <button type="button" class="btn import-btn" (click)="triggerImport()" [disabled]="importing">
+        {{ importing ? 'Importing...' : 'Import from Chrome' }}
+      </button>
+      <input #fileInput type="file" accept=".html,.htm" style="display:none"
+             (change)="onFileSelected($event)" />
+    </div>
+  </form>
+  <p class="import-msg" *ngIf="importMessage">{{ importMessage }}</p>
+  <p class="error" *ngIf="error">{{ error }}</p>
+</section>
+
+<section class="panel">
+  <div class="panel-head">
+    <h2>{{ view === 'archived' ? 'Archived Bookmarks' : 'Saved Bookmarks' }}</h2>
+    <div class="head-tools">
+      <div class="seg">
+        <button type="button" [class.active]="view === 'active'" (click)="setView('active')">Active</button>
+        <button type="button" [class.active]="view === 'archived'" (click)="setView('archived')">Archived</button>
+      </div>
+      <input *ngIf="view === 'active'" class="search" type="search" name="search"
+             [(ngModel)]="search" (ngModelChange)="onSearchChange()"
+             placeholder="Search name or additional info..." />
+    </div>
+  </div>
+
+  <div class="grid-scroll">
+    <table class="grid">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>URL</th>
+          <th>Additional Info</th>
+          <th class="col-actions">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let b of bookmarks">
+          <td>{{ b.name }}</td>
+          <td class="url-cell">
+            <a [href]="b.url" target="_blank" rel="noopener noreferrer">{{ b.url }}</a>
+            <button type="button" class="icon-btn" title="Copy URL" (click)="copyUrl(b)">
+              {{ copiedId === b.id ? '✓' : '⧉' }}
+            </button>
+          </td>
+          <td>{{ b.additionalInfo }}</td>
+          <td class="col-actions">
+            <ng-container *ngIf="view === 'active'; else archivedActions">
+              <button type="button" class="btn small" (click)="edit(b)">Edit</button>
+              <button type="button" class="btn small danger" (click)="remove(b)">Delete</button>
+            </ng-container>
+            <ng-template #archivedActions>
+              <button type="button" class="btn small" (click)="restore(b)">Restore</button>
+              <button type="button" class="btn small danger" (click)="removePermanent(b)">Delete permanently</button>
+            </ng-template>
+          </td>
+        </tr>
+        <tr *ngIf="bookmarks.length === 0">
+          <td colspan="4" class="empty">
+            {{ view === 'archived' ? 'No archived bookmarks.' : 'No bookmarks found.' }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
