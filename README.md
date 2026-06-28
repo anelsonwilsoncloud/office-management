@@ -36,8 +36,8 @@ You wanted a database that is **a file**, **easy to transfer between PCs**, and 
 - **Import from Chrome** — export bookmarks from Chrome (Bookmark Manager → Export),
   then click "Import from Chrome" to bulk-load all your browser bookmarks at once.
   Duplicate URLs are skipped automatically.
-- Grid with **multi-word search** across name and additional info
-  (e.g. searching `fux board` finds `FUX Scrum Board`)
+- Grid with **multi-word search** across name, URL, and additional info
+  (e.g. searching `ai world` finds a bookmark named `AI Aggregator` with URL `www.ai-world.google.com`)
 - Clickable URLs + **copy-to-clipboard** button per row
 - Full **Edit** and **Delete** (soft-delete → moves to Archived)
 - **Active / Archived toggle** — view archived bookmarks, restore them, or permanently
@@ -114,7 +114,7 @@ Open <http://localhost:4200>.
 
 | Method | Endpoint                        | Description                                      |
 |--------|---------------------------------|--------------------------------------------------|
-| GET    | `/api/bookmarks?search=`        | List / multi-word search active bookmarks        |
+| GET    | `/api/bookmarks?search=`        | Multi-word search across name, URL, and additional info |
 | GET    | `/api/bookmarks/archived`       | List archived bookmarks                          |
 | POST   | `/api/bookmarks`                | Create bookmark                                  |
 | POST   | `/api/bookmarks/import`         | Import bookmarks from a Chrome HTML export file  |
