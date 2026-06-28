@@ -67,15 +67,22 @@ Then open <http://localhost:8080>.
 Your database is created at **`./office-data/office.db`** on your host machine.
 
 ### Sharing with a colleague
-Either share this repo (they run `docker compose up --build`), or push the built
-image to a registry:
+The Docker image is published automatically to GitHub Container Registry on every push to `main`.
+A colleague only needs Docker installed — no source code required:
 
 ```bash
-docker build -t office-management:latest .
-docker save office-management:latest -o office-management.tar   # hand over the .tar
-# colleague:
-docker load -i office-management.tar
-docker run -p 8080:8080 -v ${PWD}/office-data:/data office-management:latest
+# Pull the latest image
+docker pull ghcr.io/anelsonwilsoncloud/office-management:latest
+
+# Run it (database stored in ./office-data on their machine)
+docker run -p 8080:8080 -v ${PWD}/office-data:/data ghcr.io/anelsonwilsoncloud/office-management:latest
+```
+
+Then open <http://localhost:8080>.
+
+Alternatively, share the whole repo and let them build locally:
+```bash
+docker compose up --build
 ```
 
 ### Moving to a new PC
@@ -134,6 +141,8 @@ Open <http://localhost:4200>.
 
 ```
 office-management/
+├── .github/workflows/
+│   └── docker-publish.yml  Builds & pushes image to GHCR on every push to main
 ├── backend/            Spring Boot + Hibernate REST API
 │   └── src/main/java/com/office/officemanagement/
 │       ├── config/     CORS config, SQLite schema migrator
