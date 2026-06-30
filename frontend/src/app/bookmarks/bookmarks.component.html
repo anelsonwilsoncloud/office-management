@@ -1,5 +1,15 @@
 <section class="panel" *ngIf="view === 'active'">
-  <h2>Add Bookmark</h2>
+  <div class="panel-header">
+    <h2>Add Bookmark</h2>
+    <div class="header-actions">
+      <button type="button" class="btn import-btn" (click)="triggerImport()" [disabled]="importing">
+        {{ importing ? 'Importing...' : 'Import Bookmarks' }}
+      </button>
+      <button type="button" class="btn export-btn" (click)="exportBookmarks()">
+        Export Bookmarks
+      </button>
+    </div>
+  </div>
   <form class="form-grid" (ngSubmit)="save()">
     <label>
       <span>Bookmark Name</span>
@@ -22,13 +32,6 @@
     <div class="actions">
       <button type="submit" class="btn primary">{{ editingId === null ? 'Save' : 'Update' }}</button>
       <button *ngIf="editingId !== null" type="button" class="btn" (click)="resetForm()">Cancel</button>
-      <span class="import-sep">or</span>
-      <button type="button" class="btn import-btn" (click)="triggerImport()" [disabled]="importing">
-        {{ importing ? 'Importing...' : 'Import from Chrome' }}
-      </button>
-      <button type="button" class="btn export-btn" (click)="exportBookmarks()">
-        Export to Chrome
-      </button>
       <input #fileInput type="file" accept=".html,.htm" style="display:none"
              (change)="onFileSelected($event)" />
     </div>
@@ -45,6 +48,14 @@
         <button type="button" [class.active]="view === 'active'" (click)="setView('active')">Active</button>
         <button type="button" [class.active]="view === 'archived'" (click)="setView('archived')">Archived</button>
       </div>
+      <button *ngIf="view === 'active' && bookmarks.length > 0" type="button" class="btn btn-archive-all" 
+              (click)="archiveAll()" title="Archive all active bookmarks">
+        Archive All
+      </button>
+      <button *ngIf="view === 'archived' && bookmarks.length > 0" type="button" class="btn btn-danger" 
+              (click)="deleteAllArchived()" title="Permanently delete all archived bookmarks">
+        Delete All Permanently
+      </button>
       <input *ngIf="view === 'active'" class="search" type="search" name="search"
              [(ngModel)]="search" (ngModelChange)="onSearchChange()"
              placeholder="Search name or additional info..." />

@@ -32,16 +32,20 @@ You wanted a database that is **a file**, **easy to transfer between PCs**, and 
 ## Features
 
 **Tab 1 — Bookmarks**
-- Add bookmarks: Name, URL, Additional Info
+- Add bookmarks: Name, URL, Folder (optional), Additional Info
 - **Import from Chrome** — export bookmarks from Chrome (Bookmark Manager → Export),
   then click "Import from Chrome" to bulk-load all your browser bookmarks at once.
-  Duplicate URLs are skipped automatically.
+  Duplicate URLs are skipped automatically. Full folder hierarchy support (unlimited nesting).
+- **Export to Chrome** — export active bookmarks to browser-compatible HTML format with
+  nested folder structure. Works with Chrome, Edge, Firefox, Safari, and other browsers.
 - Grid with **multi-word search** across name, URL, and additional info
   (e.g. searching `ai world` finds a bookmark named `AI Aggregator` with URL `www.ai-world.google.com`)
 - Clickable URLs + **copy-to-clipboard** button per row
 - Full **Edit** and **Delete** (soft-delete → moves to Archived)
 - **Active / Archived toggle** — view archived bookmarks, restore them, or permanently
   delete them from the database
+- **Bulk operations** — Archive all active bookmarks at once, or permanently delete all
+  archived bookmarks with a single click (with confirmation dialogs)
 
 **Tab 2 — Todos**
 - Add todos: Name, Date (defaults to today), Priority (Low / Medium / High),
@@ -62,7 +66,7 @@ You wanted a database that is **a file**, **easy to transfer between PCs**, and 
 docker compose up --build
 ```
 
-Then open <http://localhost:8080>.
+Then open <http://localhost:9090>.
 
 Your database is created at **`./office-data/office.db`** on your host machine.
 
@@ -75,14 +79,14 @@ A colleague only needs Docker installed — no source code required:
 docker pull ghcr.io/anelsonwilsoncloud/office-management:latest
 
 # Run it (database stored in ./office-data on their machine)
-docker run -d --name office-management -p 8080:8080 \
+docker run -d --name office-management -p 9090:8080 \
   -v ${PWD}/office-data:/data \
   ghcr.io/anelsonwilsoncloud/office-management:latest
 ```
 
 **Windows PowerShell:**
 ```powershell
-docker run -d --name office-management -p 8080:8080 `
+docker run -d --name office-management -p 9090:8080 `
   -v C:\path\to\your\office-data:/data `
   ghcr.io/anelsonwilsoncloud/office-management:latest
 ```
@@ -94,7 +98,7 @@ docker run -d --name office-management -p 8080:8080 `
 > ⚠️ **Common mistake:** Do NOT enter `/office-data:/data` in the Host path field. That syntax is for CLI only.
 > The Host path should be the **full path on your machine**, e.g., `C:\Users\yourname\office-data`.
 
-Then open <http://localhost:8080>.
+Then open <http://localhost:9090>.
 
 Alternatively, share the whole repo and let them build locally:
 ```bash
@@ -116,7 +120,7 @@ docker pull ghcr.io/anelsonwilsoncloud/office-management:latest
 docker stop office-management && docker rm office-management
 
 # Start with the SAME office-data path — your data is intact
-docker run -d --name office-management -p 8080:8080 \
+docker run -d --name office-management -p 9090:8080 \
   -v ${PWD}/office-data:/data \
   ghcr.io/anelsonwilsoncloud/office-management:latest
 ```
@@ -155,10 +159,13 @@ Open <http://localhost:4200>.
 | GET    | `/api/bookmarks/archived`       | List archived bookmarks                          |
 | POST   | `/api/bookmarks`                | Create bookmark                                  |
 | POST   | `/api/bookmarks/import`         | Import bookmarks from a Chrome HTML export file  |
+| GET    | `/api/bookmarks/export`         | Export active bookmarks to Chrome HTML format with folder structure |
 | PUT    | `/api/bookmarks/{id}`           | Update bookmark                                  |
 | DELETE | `/api/bookmarks/{id}`           | Soft-delete (archive) a bookmark                 |
 | PUT    | `/api/bookmarks/{id}/restore`   | Restore an archived bookmark to active           |
 | DELETE | `/api/bookmarks/{id}/permanent` | Permanently delete a bookmark from the database  |
+| PUT    | `/api/bookmarks/archive-all`    | Archive all active bookmarks (bulk soft-delete)  |
+| DELETE | `/api/bookmarks/delete-all-archived` | Permanently delete all archived bookmarks   |
 
 ### Todos
 

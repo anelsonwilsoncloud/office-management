@@ -59,4 +59,14 @@ export class BookmarkService {
   exportToChrome(): Observable<Blob> {
     return this.http.get(`${this.baseUrl}/export`, { responseType: 'blob' });
   }
+
+  /** Archive all active bookmarks (bulk soft delete). */
+  archiveAll(): Observable<number> {
+    return this.http.put<number>(`${this.baseUrl}/archive-all`, {});
+  }
+
+  /** Permanently delete all archived bookmarks (bulk permanent delete). */
+  deleteAllArchived(): Observable<number> {
+    return this.http.delete<number>(`${this.baseUrl}/delete-all-archived`);
+  }
 }

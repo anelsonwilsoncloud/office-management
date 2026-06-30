@@ -161,6 +161,34 @@ export class BookmarksComponent implements OnInit {
     });
   }
 
+  archiveAll(): void {
+    if (!confirm('Are you sure you want to archive ALL active bookmarks? They can be restored later.')) {
+      return;
+    }
+    this.service.archiveAll().subscribe({
+      next: (count) => {
+        this.load();
+        this.error = '';
+        alert(`${count} bookmark(s) archived successfully.`);
+      },
+      error: () => (this.error = 'Failed to archive bookmarks')
+    });
+  }
+
+  deleteAllArchived(): void {
+    if (!confirm('Are you sure you want to PERMANENTLY delete ALL archived bookmarks? This cannot be undone!')) {
+      return;
+    }
+    this.service.deleteAllArchived().subscribe({
+      next: (count) => {
+        this.load();
+        this.error = '';
+        alert(`${count} bookmark(s) permanently deleted.`);
+      },
+      error: () => (this.error = 'Failed to delete bookmarks')
+    });
+  }
+
   private emptyForm(): BookmarkRequest {
     return { name: '', url: '', additionalInfo: '', folder: '' };
   }

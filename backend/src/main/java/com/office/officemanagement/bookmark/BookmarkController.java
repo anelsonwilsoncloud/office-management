@@ -273,6 +273,22 @@ public class BookmarkController {
                     ? null : request.getFolder().trim());
     }
 
+    @PutMapping("/archive-all")
+    public ResponseEntity<Integer> archiveAll() {
+        List<Bookmark> activeBookmarks = repository.findByArchivedFalseOrderByNameAsc();
+        activeBookmarks.forEach(b -> b.setArchived(true));
+        repository.saveAll(activeBookmarks);
+        return ResponseEntity.ok(activeBookmarks.size());
+    }
+
+    @DeleteMapping("/delete-all-archived")
+    public ResponseEntity<Integer> deleteAllArchived() {
+        List<Bookmark> archivedBookmarks = repository.findByArchivedTrueOrderByNameAsc();
+        int count = archivedBookmarks.size();
+        repository.deleteAll(archivedBookmarks);
+        return ResponseEntity.ok(count);
+    }
+
     private ResponseStatusException notFound() {
         return new ResponseStatusException(HttpStatus.NOT_FOUND, "Bookmark not found");
     }

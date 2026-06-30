@@ -26,7 +26,7 @@ export class TodosComponent implements OnInit {
 
   search = '';
   // null = all, true = accomplished only, false = pending only
-  accomplishedFilter: 'all' | 'true' | 'false' = 'all';
+  accomplishedFilter: 'all' | 'true' | 'false' = 'false';
 
   prioritySort: SortDir | null = null;
 
