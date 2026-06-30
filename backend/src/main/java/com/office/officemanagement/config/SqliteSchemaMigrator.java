@@ -32,6 +32,7 @@ public class SqliteSchemaMigrator implements ApplicationRunner {
         ensureColumn("bookmarks", "archived", "INTEGER NOT NULL DEFAULT 0");
         ensureColumn("bookmarks", "folder", "TEXT");
         ensureColumn("todos", "archived", "INTEGER NOT NULL DEFAULT 0");
+        ensureColumn("daily_activities", "archived", "INTEGER NOT NULL DEFAULT 0");
     }
 
     private void ensureColumn(String table, String column, String columnDefinition) {

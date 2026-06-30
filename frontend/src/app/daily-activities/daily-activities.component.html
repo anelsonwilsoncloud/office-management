@@ -1,0 +1,94 @@
+<section class="panel" *ngIf="view === 'active'">
+  <h2>Add Daily Activity</h2>
+  <form class="form-grid" (ngSubmit)="save()">
+    <label>
+      <span>Activity Name *</span>
+      <input type="text" name="activityName" [(ngModel)]="form.activityName" placeholder="e.g. Code Review" required />
+    </label>
+    <label>
+      <span>Story Number</span>
+      <input type="text" name="storyNumber" [(ngModel)]="form.storyNumber" placeholder="e.g. JIRA-123" />
+    </label>
+    <label>
+      <span>Story Link</span>
+      <input type="text" name="storyLink" [(ngModel)]="form.storyLink" placeholder="e.g. https://jira.com/..." />
+    </label>
+    <label>
+      <span>Hours Spend</span>
+      <input type="number" step="0.5" name="hoursSpend" [(ngModel)]="form.hoursSpend" placeholder="e.g. 2.5" />
+    </label>
+    <label class="checkbox-label">
+      <input type="checkbox" name="highlight" [(ngModel)]="form.highlight" />
+      <span>Highlight</span>
+    </label>
+    <label class="full-width">
+      <span>Description</span>
+      <textarea name="description" [(ngModel)]="form.description" rows="2" placeholder="Any details"></textarea>
+    </label>
+    <div class="actions">
+      <button type="submit" class="btn primary">{{ editingId === null ? 'Save' : 'Update' }}</button>
+      <button *ngIf="editingId !== null" type="button" class="btn" (click)="resetForm()">Cancel</button>
+    </div>
+  </form>
+  <p class="error" *ngIf="error">{{ error }}</p>
+</section>
+
+<section class="panel">
+  <div class="panel-head">
+    <h2>{{ view === 'archived' ? 'Archived Activities' : 'All Activities' }}</h2>
+    <div class="head-tools">
+      <div class="seg">
+        <button type="button" [class.active]="view === 'active'" (click)="setView('active')">Active</button>
+        <button type="button" [class.active]="view === 'archived'" (click)="setView('archived')">Archived</button>
+      </div>
+      <input *ngIf="view === 'active'" class="search" type="search" name="search"
+             [(ngModel)]="search" (ngModelChange)="onSearchChange()"
+             placeholder="Search activities..." />
+    </div>
+  </div>
+
+  <div class="grid-scroll">
+    <table class="grid">
+      <thead>
+        <tr>
+          <th>Activity Name</th>
+          <th>Story Number</th>
+          <th>Story Link</th>
+          <th>Hours</th>
+          <th>Highlight</th>
+          <th>Description</th>
+          <th class="col-actions">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let a of activities" [class.highlighted-row]="a.highlight">
+          <td>{{ a.activityName }}</td>
+          <td>{{ a.storyNumber || '—' }}</td>
+          <td class="link-cell">
+            <a *ngIf="a.storyLink" [href]="a.storyLink" target="_blank" rel="noopener noreferrer">{{ a.storyLink }}</a>
+            <span *ngIf="!a.storyLink">—</span>
+          </td>
+          <td>{{ a.hoursSpend || '—' }}</td>
+          <td class="highlight-cell">
+            <span *ngIf="a.highlight" class="highlight-badge">✓</span>
+            <span *ngIf="!a.highlight">—</span>
+          </td>
+          <td>{{ a.description || '—' }}</td>
+          <td class="col-actions">
+            <ng-container *ngIf="view === 'active'; else archivedActions">
+              <button type="button" class="btn-grid" (click)="edit(a)">Edit</button>
+              <button type="button" class="btn-grid danger" (click)="remove(a.id)">Delete</button>
+            </ng-container>
+            <ng-template #archivedActions>
+              <button type="button" class="btn-grid" (click)="restore(a.id)">Restore</button>
+              <button type="button" class="btn-grid danger" (click)="removePermanent(a.id)">Permanent Delete</button>
+            </ng-template>
+          </td>
+        </tr>
+        <tr *ngIf="activities.length === 0">
+          <td colspan="7" class="empty">No activities found</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>

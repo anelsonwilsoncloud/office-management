@@ -2,13 +2,14 @@
 import { CommonModule } from '@angular/common';
 import { BookmarksComponent } from './bookmarks/bookmarks.component';
 import { TodosComponent } from './todos/todos.component';
+import { DailyActivitiesComponent } from './daily-activities/daily-activities.component';
 
-type Tab = 'bookmarks' | 'todos';
+type Tab = 'bookmarks' | 'todos' | 'activities';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, BookmarksComponent, TodosComponent],
+  imports: [CommonModule, BookmarksComponent, TodosComponent, DailyActivitiesComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })

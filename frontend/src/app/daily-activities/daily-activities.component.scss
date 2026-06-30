@@ -1,0 +1,49 @@
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+  }
+
+  span {
+    margin: 0;
+  }
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.link-cell {
+  a {
+    color: #1a73e8;
+    text-decoration: none;
+    word-break: break-all;
+  }
+  a:hover {
+    text-decoration: underline;
+  }
+}
+
+.highlight-cell {
+  text-align: center;
+}
+
+.highlight-badge {
+  display: inline-block;
+  background: #34a853;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  line-height: 20px;
+  font-size: 0.75rem;
+}
+
+.highlighted-row {
+  background: #fffacd !important;
+  font-weight: 500;
+}

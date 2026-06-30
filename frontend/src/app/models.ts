@@ -33,3 +33,23 @@ export interface TodoRequest {
   description?: string | null;
   accomplished: boolean;
 }
+
+export interface DailyActivity {
+  id: number;
+  activityName: string;
+  storyNumber?: string | null;
+  storyLink?: string | null;
+  hoursSpend?: number | null;
+  highlight?: boolean;
+  description?: string | null;
+  archived?: boolean;
+}
+
+export interface DailyActivityRequest {
+  activityName: string;
+  storyNumber?: string | null;
+  storyLink?: string | null;
+  hoursSpend?: number | null;
+  highlight?: boolean;
+  description?: string | null;
+}
