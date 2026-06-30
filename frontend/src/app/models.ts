@@ -53,3 +53,19 @@ export interface DailyActivityRequest {
   highlight?: boolean;
   description?: string | null;
 }
+
+export type LearningPriority = 'ok' | 'imp' | 'v.imp';
+
+export interface TechnicalLearning {
+  id: number;
+  topic: string;
+  priority: LearningPriority;
+  description?: string | null;
+  archived?: boolean;
+}
+
+export interface TechnicalLearningRequest {
+  topic: string;
+  priority: LearningPriority;
+  description?: string | null;
+}

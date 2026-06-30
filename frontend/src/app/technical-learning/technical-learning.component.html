@@ -1,0 +1,109 @@
+<section class="panel" *ngIf="view === 'active'">
+  <h2>Add Technical Learning Topic</h2>
+  <form class="form-grid" (ngSubmit)="save()">
+    <label>
+      <span>Topic *</span>
+      <input type="text" name="topic" [(ngModel)]="form.topic" placeholder="e.g. Angular Signals" required />
+    </label>
+    <label>
+      <span>Learning Priority *</span>
+      <select name="priority" [(ngModel)]="form.priority" required>
+        <option value="ok">OK</option>
+        <option value="imp">Important</option>
+        <option value="v.imp">Very Important</option>
+      </select>
+    </label>
+    <label class="full-width">
+      <span>Description (max 3000 characters)</span>
+      <textarea name="description" [(ngModel)]="form.description" rows="4" maxlength="3000"
+                placeholder="Enter detailed description..."></textarea>
+    </label>
+    <div class="actions">
+      <button type="submit" class="btn primary">{{ editingId === null ? 'Save' : 'Update' }}</button>
+      <button *ngIf="editingId !== null" type="button" class="btn" (click)="resetForm()">Cancel</button>
+    </div>
+  </form>
+  <p class="error" *ngIf="error">{{ error }}</p>
+</section>
+
+<section class="panel">
+  <div class="panel-head">
+    <h2>{{ view === 'archived' ? 'Archived Topics' : 'All Learning Topics' }}</h2>
+    <div class="head-tools">
+      <div class="seg">
+        <button type="button" [class.active]="view === 'active'" (click)="setView('active')">Active</button>
+        <button type="button" [class.active]="view === 'archived'" (click)="setView('archived')">Archived</button>
+      </div>
+      <input *ngIf="view === 'active'" class="search" type="search" name="search"
+             [(ngModel)]="search" (ngModelChange)="onSearchChange()"
+             placeholder="Search topics..." />
+    </div>
+  </div>
+
+  <div class="grid-scroll">
+    <table class="grid">
+      <thead>
+        <tr>
+          <th>Topic Name</th>
+          <th>Priority</th>
+          <th>Description</th>
+          <th class="col-actions">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let l of learnings" 
+            [class.selected-row]="selectedLearning?.id === l.id"
+            (click)="selectForDetail(l)" 
+            style="cursor: pointer;">
+          <td>{{ l.topic }}</td>
+          <td>
+            <span class="priority-badge" [class.priority-ok]="l.priority === 'ok'" 
+                  [class.priority-imp]="l.priority === 'imp'" 
+                  [class.priority-vimp]="l.priority === 'v.imp'">
+              {{ l.priority === 'ok' ? 'OK' : l.priority === 'imp' ? 'Important' : 'Very Important' }}
+            </span>
+          </td>
+          <td class="desc-preview">{{ l.description || '—' }}</td>
+          <td class="col-actions" (click)="$event.stopPropagation()">
+            <ng-container *ngIf="view === 'active'; else archivedActions">
+              <button type="button" class="btn-grid" (click)="edit(l)">Edit</button>
+              <button type="button" class="btn-grid danger" (click)="remove(l.id)">Delete</button>
+            </ng-container>
+            <ng-template #archivedActions>
+              <button type="button" class="btn-grid" (click)="restore(l.id)">Restore</button>
+              <button type="button" class="btn-grid danger" (click)="removePermanent(l.id)">Permanent Delete</button>
+            </ng-template>
+          </td>
+        </tr>
+        <tr *ngIf="learnings.length === 0">
+          <td colspan="4" class="empty">No learning topics found</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Detail Description Section -->
+<section class="panel detail-panel" *ngIf="selectedLearning">
+  <h2 class="detail-header">Detail Description</h2>
+  <div class="detail-content">
+    <div class="detail-row">
+      <span class="detail-label">Topic name:</span>
+      <span class="detail-value">{{ selectedLearning.topic }}</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-label">Priority:</span>
+      <span class="detail-value">
+        <span class="priority-badge" [class.priority-ok]="selectedLearning.priority === 'ok'" 
+              [class.priority-imp]="selectedLearning.priority === 'imp'" 
+              [class.priority-vimp]="selectedLearning.priority === 'v.imp'">
+          {{ selectedLearning.priority === 'ok' ? 'OK' : selectedLearning.priority === 'imp' ? 'Important' : 'Very Important' }}
+        </span>
+      </span>
+    </div>
+    <div class="detail-row full-desc">
+      <span class="detail-label">Description:</span>
+      <div class="detail-description">{{ selectedLearning.description || 'No description provided' }}</div>
+    </div>
+  </div>
+</section>

@@ -13,12 +13,16 @@
   <button type="button" [class.active]="activeTab === 'activities'" (click)="select('activities')">
     Daily Activities
   </button>
+  <button type="button" [class.active]="activeTab === 'learning'" (click)="select('learning')">
+    Technical Learning
+  </button>
 </nav>
 
 <main class="content">
   <app-bookmarks *ngIf="activeTab === 'bookmarks'"></app-bookmarks>
   <app-todos *ngIf="activeTab === 'todos'"></app-todos>
   <app-daily-activities *ngIf="activeTab === 'activities'"></app-daily-activities>
+  <app-technical-learning *ngIf="activeTab === 'learning'"></app-technical-learning>
 </main>
 
 <footer class="app-footer">
