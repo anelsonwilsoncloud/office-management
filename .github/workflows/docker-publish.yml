@@ -8,7 +8,7 @@ on:
 
 env:
   # Docker Hub image name: <username>/<repo>
-  IMAGE_NAME: anelsonwilsoncloud/office-management
+  IMAGE_NAME: anelsonwilson007/office-management
 
 jobs:
   build-and-push:

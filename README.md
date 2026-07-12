@@ -2,8 +2,8 @@
 
 > A fast, self-hosted productivity app to track your **bookmarks** and **todos** in a single, portable database — so nothing gets lost and you stay productive.
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/anelsonwilsoncloud/office-management)](https://hub.docker.com/r/anelsonwilsoncloud/office-management)
-[![Docker Image Size](https://img.shields.io/docker/image-size/anelsonwilsoncloud/office-management/latest)](https://hub.docker.com/r/anelsonwilsoncloud/office-management)
+[![Docker Pulls](https://img.shields.io/docker/pulls/anelsonwilson007/office-management)](https://hub.docker.com/r/anelsonwilson007/office-management)
+[![Docker Image Size](https://img.shields.io/docker/image-size/anelsonwilson007/office-management/latest)](https://hub.docker.com/r/anelsonwilson007/office-management)
 [![Build & Publish](https://github.com/anelsonwilsoncloud/office-management/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/anelsonwilsoncloud/office-management/actions/workflows/docker-publish.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
@@ -12,7 +12,7 @@ Run the whole application — Angular UI, Spring Boot API, and database — with
 ```bash
 docker run -d --name office-management -p 9090:8080 \
   -v ${PWD}/office-data:/data \
-  anelsonwilsoncloud/office-management:latest
+  anelsonwilson007/office-management:latest
 ```
 
 Then open <http://localhost:9090>.
@@ -36,16 +36,16 @@ Then open <http://localhost:9090>.
 
 ## Quick start
 
-The image is published publicly on **[Docker Hub](https://hub.docker.com/r/anelsonwilsoncloud/office-management)**. Anyone with Docker installed can run it — no source code required.
+The image is published publicly on **[Docker Hub](https://hub.docker.com/r/anelsonwilson007/office-management)**. Anyone with Docker installed can run it — no source code required.
 
 ```bash
 # 1. Pull the latest image
-docker pull anelsonwilsoncloud/office-management:latest
+docker pull anelsonwilson007/office-management:latest
 
 # 2. Run it (your database is stored in ./office-data on your machine)
 docker run -d --name office-management -p 9090:8080 \
   -v ${PWD}/office-data:/data \
-  anelsonwilsoncloud/office-management:latest
+  anelsonwilson007/office-management:latest
 
 # 3. Open the app
 #    http://localhost:9090
@@ -55,7 +55,7 @@ docker run -d --name office-management -p 9090:8080 \
 ```powershell
 docker run -d --name office-management -p 9090:8080 `
   -v C:\path\to\your\office-data:/data `
-  anelsonwilsoncloud/office-management:latest
+  anelsonwilson007/office-management:latest
 ```
 
 ---
@@ -147,7 +147,7 @@ Your existing database is **automatically preserved** across upgrades:
 
 ```bash
 # Pull the new image
-docker pull anelsonwilsoncloud/office-management:latest
+docker pull anelsonwilson007/office-management:latest
 
 # Stop and remove the old container
 docker stop office-management && docker rm office-management
@@ -155,7 +155,7 @@ docker stop office-management && docker rm office-management
 # Start with the SAME office-data path — your data is intact
 docker run -d --name office-management -p 9090:8080 \
   -v ${PWD}/office-data:/data \
-  anelsonwilsoncloud/office-management:latest
+  anelsonwilson007/office-management:latest
 ```
 
 **Why your data is safe:**
