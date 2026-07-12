@@ -1,7 +1,7 @@
 services:
   office-management:
     build: .
-    image: office-management:latest
+    image: anelsonwilsoncloud/office-management:latest
     container_name: office-management
     ports:
       - "9090:8080"
