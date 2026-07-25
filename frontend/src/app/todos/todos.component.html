@@ -36,6 +36,17 @@
   <div class="panel-head">
     <h2>{{ view === 'archived' ? 'Archived Todos' : 'All Todos' }}</h2>
     <div class="head-tools">
+      <div class="date-range-filter" *ngIf="view === 'active'">
+        <label class="date-label">
+          <span>From</span>
+          <input type="date" [(ngModel)]="dateFrom" (ngModelChange)="loadMain()" />
+        </label>
+        <label class="date-label">
+          <span>To</span>
+          <input type="date" [(ngModel)]="dateTo" (ngModelChange)="loadMain()" />
+        </label>
+        <button *ngIf="dateFrom || dateTo" type="button" class="btn small" (click)="clearDateFilter()">Clear</button>
+      </div>
       <div class="seg">
         <button type="button" [class.active]="view === 'active'" (click)="setView('active')">Active</button>
         <button type="button" [class.active]="view === 'archived'" (click)="setView('archived')">Archived</button>

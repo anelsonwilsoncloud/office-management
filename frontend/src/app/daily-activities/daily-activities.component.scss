@@ -1,3 +1,14 @@
+﻿.input-disabled {
+  background: #f1f3f4 !important;
+  color: #9aa0a6 !important;
+  cursor: not-allowed !important;
+  border-color: #e0e0e0 !important;
+}
+
+.small-input {
+  width: 50% !important;
+}
+
 .checkbox-label {
   display: flex;
   align-items: center;
@@ -17,33 +28,171 @@
   grid-column: 1 / -1;
 }
 
-.link-cell {
-  a {
-    color: #1a73e8;
-    text-decoration: none;
-    word-break: break-all;
-  }
-  a:hover {
-    text-decoration: underline;
-  }
-}
-
 .highlight-cell {
   text-align: center;
 }
 
+/* Pure CSS checkmark - no unicode dependency */
 .highlight-badge {
   display: inline-block;
   background: #34a853;
-  color: white;
   border-radius: 50%;
   width: 20px;
   height: 20px;
-  line-height: 20px;
-  font-size: 0.75rem;
+  position: relative;
+
+  &::after {
+    content: "";
+    position: absolute;
+    left: 5px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: 2px solid #fff;
+    border-top: none;
+    border-left: none;
+    transform: rotate(45deg);
+  }
+}
+
+/* Pause indicator badge */
+.pause-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #f9ab00;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
 }
 
 .highlighted-row {
   background: #fffacd !important;
   font-weight: 500;
+}
+
+/* Story number cell: link + copy button */
+.story-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+
+  a {
+    color: #1a73e8;
+    text-decoration: none;
+    font-weight: 500;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.copy-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid #dadce0;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 2px 5px;
+  min-width: 24px;
+  height: 22px;
+  font-size: 0.75rem;
+  color: #5f6368;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+
+  svg {
+    display: block;
+  }
+
+  &:hover {
+    background: #f1f3f4;
+    color: #202124;
+    border-color: #bdc1c6;
+  }
+
+  &.copied {
+    background: #e6f4ea;
+    border-color: #34a853;
+    color: #34a853;
+    font-weight: 600;
+  }
+}
+
+/* Total hours footer row */
+.total-row td {
+  border-top: 2px solid #dadce0;
+  padding-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #202124;
+}
+
+/* Paused filter checkbox in header */
+.pause-filter-label {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  color: #202124;
+  cursor: pointer;
+  white-space: nowrap;
+
+  input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+    cursor: pointer;
+    accent-color: #f9ab00;
+  }
+}
+
+.date-range-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  .date-label {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.82rem;
+    color: #5f6368;
+
+    span {
+      white-space: nowrap;
+      font-weight: 500;
+    }
+
+    input[type="date"] {
+      border: 1px solid #dadce0;
+      border-radius: 4px;
+      padding: 0.22rem 0.4rem;
+      font-size: 0.82rem;
+      color: #202124;
+      cursor: pointer;
+
+      &:focus {
+        outline: none;
+        border-color: #1a73e8;
+      }
+    }
+  }
+}
+
+/* Team filter dropdown in All Activities header */
+.team-filter {
+  border: 1px solid #dadce0;
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.85rem;
+  color: #202124;
+  background: #fff;
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+    border-color: #1a73e8;
+  }
 }

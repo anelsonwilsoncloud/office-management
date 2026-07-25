@@ -1,15 +1,19 @@
 package com.office.officemanagement.activity;
 
 import jakarta.validation.constraints.NotBlank;
+import java.time.LocalDate;
 
 public class DailyActivityRequest {
 
     @NotBlank(message = "Activity name is required")
     private String activityName;
     private String storyNumber;
-    private String storyLink;
+    private String team;
+    private LocalDate startDate;
+    private LocalDate endDate;
     private Double hoursSpend;
     private Boolean highlight;
+    private Boolean paused;
     private String description;
 
     public String getActivityName() {
@@ -28,12 +32,28 @@ public class DailyActivityRequest {
         this.storyNumber = storyNumber;
     }
 
-    public String getStoryLink() {
-        return storyLink;
+    public String getTeam() {
+        return team;
     }
 
-    public void setStoryLink(String storyLink) {
-        this.storyLink = storyLink;
+    public void setTeam(String team) {
+        this.team = team;
+    }
+
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
+
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
     }
 
     public Double getHoursSpend() {
@@ -50,6 +70,14 @@ public class DailyActivityRequest {
 
     public void setHighlight(Boolean highlight) {
         this.highlight = highlight;
+    }
+
+    public Boolean getPaused() {
+        return paused;
+    }
+
+    public void setPaused(Boolean paused) {
+        this.paused = paused;
     }
 
     public String getDescription() {

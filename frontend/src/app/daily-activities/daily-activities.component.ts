@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { DailyActivity, DailyActivityRequest } from '../models';
 import { DailyActivityService } from '../daily-activity.service';
 
+export type TeamOption = 'FUX' | 'TCP' | 'IRAM' | 'AI' | 'OTHER';
+
 @Component({
   selector: 'app-daily-activities',
   standalone: true,
@@ -12,13 +14,21 @@ import { DailyActivityService } from '../daily-activity.service';
   styleUrl: './daily-activities.component.scss'
 })
 export class DailyActivitiesComponent implements OnInit {
+  readonly teams: TeamOption[] = ['FUX', 'TCP', 'IRAM', 'AI', 'OTHER'];
+  readonly jiraBaseUrl = 'https://atc.bmwgroup.net/jira/browse/';
+
   activities: DailyActivity[] = [];
   search = '';
+  teamFilter = '';
+  dateFrom = '';
+  dateTo = '';
+  pausedFilter = false;
   view: 'active' | 'archived' = 'active';
 
   form: DailyActivityRequest = this.emptyForm();
   editingId: number | null = null;
   error = '';
+  copySuccess: number | null = null;
 
   constructor(private activityService: DailyActivityService) {}
 
@@ -28,14 +38,24 @@ export class DailyActivitiesComponent implements OnInit {
 
   load(): void {
     const source$ =
-      this.view === 'archived' ? this.activityService.listArchived() : this.activityService.list(this.search);
+      this.view === 'archived'
+        ? this.activityService.listArchived()
+        : this.activityService.list(this.search, this.teamFilter, this.dateFrom, this.dateTo);
     source$.subscribe({
-      next: (data) => (this.activities = data),
+      next: (data) => {
+        this.activities = this.pausedFilter ? data.filter(a => a.paused) : data;
+      },
       error: () => (this.error = 'Failed to load activities')
     });
   }
 
   onSearchChange(): void {
+    this.load();
+  }
+
+  clearDateFilter(): void {
+    this.dateFrom = '';
+    this.dateTo = '';
     this.load();
   }
 
@@ -66,9 +86,12 @@ export class DailyActivitiesComponent implements OnInit {
     this.form = {
       activityName: activity.activityName,
       storyNumber: activity.storyNumber || '',
-      storyLink: activity.storyLink || '',
+      team: activity.team || '',
+      startDate: activity.startDate || '',
+      endDate: activity.endDate || '',
       hoursSpend: activity.hoursSpend || null,
       highlight: activity.highlight || false,
+      paused: activity.paused || false,
       description: activity.description || ''
     };
   }
@@ -106,6 +129,27 @@ export class DailyActivitiesComponent implements OnInit {
     });
   }
 
+  storyUrl(storyNumber: string): string {
+    return this.jiraBaseUrl + storyNumber;
+  }
+
+  copyToClipboard(text: string, id: number): void {
+    navigator.clipboard.writeText(text).then(() => {
+      this.copySuccess = id;
+      setTimeout(() => (this.copySuccess = null), 1500);
+    });
+  }
+
+  get totalHours(): number {
+    return this.activities.reduce((sum, a) => sum + (a.hoursSpend || 0), 0);
+  }
+
+  onPauseChange(): void {
+    if (this.form.paused) {
+      this.form.storyNumber = '';
+    }
+  }
+
   resetForm(): void {
     this.editingId = null;
     this.form = this.emptyForm();
@@ -115,9 +159,12 @@ export class DailyActivitiesComponent implements OnInit {
     return {
       activityName: '',
       storyNumber: '',
-      storyLink: '',
+      team: '',
+      startDate: '',
+      endDate: '',
       hoursSpend: null,
       highlight: false,
+      paused: false,
       description: ''
     };
   }

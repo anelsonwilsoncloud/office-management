@@ -9,10 +9,19 @@ export class DailyActivityService {
 
   constructor(private http: HttpClient) {}
 
-  list(search?: string): Observable<DailyActivity[]> {
+  list(search?: string, team?: string, fromDate?: string, toDate?: string): Observable<DailyActivity[]> {
     let params = new HttpParams();
     if (search && search.trim()) {
       params = params.set('search', search.trim());
+    }
+    if (team && team.trim()) {
+      params = params.set('team', team.trim());
+    }
+    if (fromDate) {
+      params = params.set('fromDate', fromDate);
+    }
+    if (toDate) {
+      params = params.set('toDate', toDate);
     }
     return this.http.get<DailyActivity[]>(this.baseUrl, { params });
   }

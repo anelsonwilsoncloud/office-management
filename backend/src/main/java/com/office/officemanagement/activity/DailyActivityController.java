@@ -1,7 +1,9 @@
 package com.office.officemanagement.activity;
 
 import jakarta.validation.Valid;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -26,19 +28,47 @@ public class DailyActivityController {
     }
 
     @GetMapping
-    public List<DailyActivity> list(@RequestParam(required = false) String search) {
+    public List<DailyActivity> list(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String team,
+            @RequestParam(required = false) String fromDate,
+            @RequestParam(required = false) String toDate) {
         List<DailyActivity> activities = repository.findByArchivedFalseOrderByIdDesc();
+
         if (search != null && !search.trim().isEmpty()) {
             String[] words = search.trim().toLowerCase().split("\\s+");
-            return activities.stream()
+            activities = activities.stream()
                     .filter(a -> {
                         String text = (a.getActivityName() + " " +
                                 (a.getStoryNumber() != null ? a.getStoryNumber() : "") + " " +
+                                (a.getTeam() != null ? a.getTeam() : "") + " " +
                                 (a.getDescription() != null ? a.getDescription() : ""));
                         return matchesAllWords(text, words);
                     })
-                    .toList();
+                    .collect(Collectors.toList());
         }
+
+        if (team != null && !team.trim().isEmpty()) {
+            final String t = team.trim().toUpperCase();
+            activities = activities.stream()
+                    .filter(a -> t.equals(a.getTeam()))
+                    .collect(Collectors.toList());
+        }
+
+        if (fromDate != null && !fromDate.isBlank()) {
+            LocalDate from = LocalDate.parse(fromDate);
+            activities = activities.stream()
+                    .filter(a -> a.getStartDate() != null && !a.getStartDate().isBefore(from))
+                    .collect(Collectors.toList());
+        }
+
+        if (toDate != null && !toDate.isBlank()) {
+            LocalDate to = LocalDate.parse(toDate);
+            activities = activities.stream()
+                    .filter(a -> a.getStartDate() != null && !a.getStartDate().isAfter(to))
+                    .collect(Collectors.toList());
+        }
+
         return activities;
     }
 
@@ -99,11 +129,14 @@ public class DailyActivityController {
         activity.setStoryNumber(
                 request.getStoryNumber() == null || request.getStoryNumber().trim().isEmpty()
                         ? null : request.getStoryNumber().trim());
-        activity.setStoryLink(
-                request.getStoryLink() == null || request.getStoryLink().trim().isEmpty()
-                        ? null : request.getStoryLink().trim());
+        activity.setTeam(
+                request.getTeam() == null || request.getTeam().trim().isEmpty()
+                        ? null : request.getTeam().trim().toUpperCase());
+        activity.setStartDate(request.getStartDate());
+        activity.setEndDate(request.getEndDate());
         activity.setHoursSpend(request.getHoursSpend());
         activity.setHighlight(request.getHighlight() != null && request.getHighlight());
+        activity.setPaused(request.getPaused() != null && request.getPaused());
         activity.setDescription(
                 request.getDescription() == null || request.getDescription().trim().isEmpty()
                         ? null : request.getDescription().trim());

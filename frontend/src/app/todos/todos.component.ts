@@ -27,6 +27,8 @@ export class TodosComponent implements OnInit {
   search = '';
   // null = all, true = accomplished only, false = pending only
   accomplishedFilter: 'all' | 'true' | 'false' = 'false';
+  dateFrom = '';
+  dateTo = '';
 
   prioritySort: SortDir | null = null;
 
@@ -61,13 +63,19 @@ export class TodosComponent implements OnInit {
   loadMain(): void {
     const accomplished =
       this.accomplishedFilter === 'all' ? null : this.accomplishedFilter === 'true';
-    this.service.list(this.search, accomplished).subscribe({
+    this.service.list(this.search, accomplished, this.dateFrom, this.dateTo).subscribe({
       next: (data) => {
         this.todos = data;
         this.applyPrioritySort();
       },
       error: () => (this.error = 'Failed to load todos')
     });
+  }
+
+  clearDateFilter(): void {
+    this.dateFrom = '';
+    this.dateTo = '';
+    this.loadMain();
   }
 
   togglePrioritySort(): void {
