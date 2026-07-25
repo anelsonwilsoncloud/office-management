@@ -1,4 +1,4 @@
-<section class="panel" *ngIf="view === 'active'">
+﻿<section class="panel" *ngIf="view === 'active'">
   <h2>Add Daily Activity</h2>
   <form class="form-grid" (ngSubmit)="save()">
     <label>
@@ -7,22 +7,38 @@
     </label>
     <label>
       <span>Story Number</span>
-      <input type="text" name="storyNumber" [(ngModel)]="form.storyNumber" placeholder="e.g. JIRA-123" />
+      <input type="text" name="storyNumber" [(ngModel)]="form.storyNumber" placeholder="e.g. FGP-12123"
+             [disabled]="!!form.paused" [class.input-disabled]="form.paused" />
     </label>
     <label>
-      <span>Story Link</span>
-      <input type="text" name="storyLink" [(ngModel)]="form.storyLink" placeholder="e.g. https://jira.com/..." />
+      <span>Team</span>
+      <select name="team" [(ngModel)]="form.team">
+        <option value="">-- Select Team --</option>
+        <option *ngFor="let t of teams" [value]="t">{{ t }}</option>
+      </select>
     </label>
     <label>
       <span>Hours Spend</span>
-      <input type="number" step="0.5" name="hoursSpend" [(ngModel)]="form.hoursSpend" placeholder="e.g. 2.5" />
+      <input type="number" step="0.5" name="hoursSpend" [(ngModel)]="form.hoursSpend" placeholder="e.g. 2.5" class="small-input" />
+    </label>
+    <label>
+      <span>Start Date</span>
+      <input type="date" name="startDate" [(ngModel)]="form.startDate" />
+    </label>
+    <label>
+      <span>End Date</span>
+      <input type="date" name="endDate" [(ngModel)]="form.endDate" />
     </label>
     <label class="checkbox-label">
       <input type="checkbox" name="highlight" [(ngModel)]="form.highlight" />
-      <span>Highlight</span>
+      <span>Completed</span>
+    </label>
+    <label class="checkbox-label">
+      <input type="checkbox" name="paused" [(ngModel)]="form.paused" (ngModelChange)="onPauseChange()" />
+      <span>Pause</span>
     </label>
     <label class="full-width">
-      <span>Description</span>
+      <span>Description / Pausing Factor</span>
       <textarea name="description" [(ngModel)]="form.description" rows="2" placeholder="Any details"></textarea>
     </label>
     <div class="actions">
@@ -41,9 +57,30 @@
         <button type="button" [class.active]="view === 'active'" (click)="setView('active')">Active</button>
         <button type="button" [class.active]="view === 'archived'" (click)="setView('archived')">Archived</button>
       </div>
-      <input *ngIf="view === 'active'" class="search" type="search" name="search"
-             [(ngModel)]="search" (ngModelChange)="onSearchChange()"
-             placeholder="Search activities..." />
+      <ng-container *ngIf="view === 'active'">
+        <div class="date-range-filter">
+          <label class="date-label">
+            <span>From</span>
+            <input type="date" [(ngModel)]="dateFrom" (ngModelChange)="load()" />
+          </label>
+          <label class="date-label">
+            <span>To</span>
+            <input type="date" [(ngModel)]="dateTo" (ngModelChange)="load()" />
+          </label>
+          <button *ngIf="dateFrom || dateTo" type="button" class="btn small" (click)="clearDateFilter()">Clear</button>
+        </div>
+        <select class="team-filter" name="teamFilter" [(ngModel)]="teamFilter" (ngModelChange)="load()">
+          <option value="">All Teams</option>
+          <option *ngFor="let t of teams" [value]="t">{{ t }}</option>
+        </select>
+        <label class="pause-filter-label">
+          <input type="checkbox" [(ngModel)]="pausedFilter" (ngModelChange)="load()" />
+          <span>Paused</span>
+        </label>
+        <input class="search" type="search" name="search"
+               [(ngModel)]="search" (ngModelChange)="onSearchChange()"
+               placeholder="Search activities..." />
+      </ng-container>
     </div>
   </div>
 
@@ -53,9 +90,12 @@
         <tr>
           <th>Activity Name</th>
           <th>Story Number</th>
-          <th>Story Link</th>
+          <th>Team</th>
+          <th>Start Date</th>
+          <th>End Date</th>
           <th>Hours</th>
-          <th>Highlight</th>
+          <th>Completed</th>
+          <th>Pause</th>
           <th>Description</th>
           <th class="col-actions">Actions</th>
         </tr>
@@ -63,17 +103,42 @@
       <tbody>
         <tr *ngFor="let a of activities" [class.highlighted-row]="a.highlight">
           <td>{{ a.activityName }}</td>
-          <td>{{ a.storyNumber || '—' }}</td>
-          <td class="link-cell">
-            <a *ngIf="a.storyLink" [href]="a.storyLink" target="_blank" rel="noopener noreferrer">{{ a.storyLink }}</a>
-            <span *ngIf="!a.storyLink">—</span>
+          <td class="story-cell">
+            <ng-container *ngIf="a.storyNumber; else noStory">
+              <a [href]="storyUrl(a.storyNumber)" target="_blank" rel="noopener noreferrer">{{ a.storyNumber }}</a>
+              <button type="button" class="copy-btn"
+                      [class.copied]="copySuccess === a.id"
+                      (click)="copyToClipboard(a.storyNumber, a.id)"
+                      title="Copy to clipboard">
+                <ng-container *ngIf="copySuccess !== a.id">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="2" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                </ng-container>
+                <ng-container *ngIf="copySuccess === a.id">OK</ng-container>
+              </button>
+            </ng-container>
+            <ng-template #noStory>-</ng-template>
           </td>
-          <td>{{ a.hoursSpend || '—' }}</td>
+          <td>{{ a.team || '-' }}</td>
+          <td>{{ a.startDate || '-' }}</td>
+          <td>{{ a.endDate || '-' }}</td>
+          <td>{{ a.hoursSpend || '-' }}</td>
           <td class="highlight-cell">
-            <span *ngIf="a.highlight" class="highlight-badge">✓</span>
-            <span *ngIf="!a.highlight">—</span>
+            <span *ngIf="a.highlight" class="highlight-badge"></span>
+            <span *ngIf="!a.highlight">-</span>
           </td>
-          <td>{{ a.description || '—' }}</td>
+          <td class="highlight-cell">
+            <span *ngIf="a.paused" class="pause-badge">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="white">
+                <rect x="5" y="3" width="4" height="18" rx="1"/>
+                <rect x="15" y="3" width="4" height="18" rx="1"/>
+              </svg>
+            </span>
+            <span *ngIf="!a.paused">-</span>
+          </td>
+          <td>{{ a.description || '-' }}</td>
           <td class="col-actions">
             <ng-container *ngIf="view === 'active'; else archivedActions">
               <button type="button" class="btn-grid" (click)="edit(a)">Edit</button>
@@ -86,7 +151,11 @@
           </td>
         </tr>
         <tr *ngIf="activities.length === 0">
-          <td colspan="7" class="empty">No activities found</td>
+          <td colspan="10" class="empty">No activities found</td>
+        </tr>
+        <tr *ngIf="activities.length > 0" class="total-row">
+          <td colspan="2"><strong>Total Hours: {{ totalHours }}</strong></td>
+          <td colspan="8"></td>
         </tr>
       </tbody>
     </table>

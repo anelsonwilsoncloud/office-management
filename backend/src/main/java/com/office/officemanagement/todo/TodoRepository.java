@@ -10,12 +10,17 @@ public interface TodoRepository extends JpaRepository<Todo, Long> {
 
     List<Todo> findByArchivedTrueOrderByDateDesc();
 
-    // Active (non-archived) listing with optional name search and accomplished filter.
+    // Active (non-archived) listing with optional name search, accomplished filter, and date range.
     @Query("select t from Todo t where t.archived = false "
             + "and (:q is null or lower(t.name) like lower(concat('%', :q, '%'))) "
             + "and (:accomplished is null or t.accomplished = :accomplished) "
+            + "and (:fromDate is null or t.date >= :fromDate) "
+            + "and (:toDate is null or t.date <= :toDate) "
             + "order by t.date desc")
-    List<Todo> searchActive(@Param("q") String q, @Param("accomplished") Boolean accomplished);
+    List<Todo> searchActive(@Param("q") String q,
+                            @Param("accomplished") Boolean accomplished,
+                            @Param("fromDate") LocalDate fromDate,
+                            @Param("toDate") LocalDate toDate);
 
     // Past pending: not archived, not accomplished, due strictly before today.
     List<Todo> findByArchivedFalseAndAccomplishedFalseAndDateBeforeOrderByDateDesc(LocalDate today);

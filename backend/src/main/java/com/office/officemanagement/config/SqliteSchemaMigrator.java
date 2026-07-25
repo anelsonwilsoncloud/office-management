@@ -33,6 +33,10 @@ public class SqliteSchemaMigrator implements ApplicationRunner {
         ensureColumn("bookmarks", "folder", "TEXT");
         ensureColumn("todos", "archived", "INTEGER NOT NULL DEFAULT 0");
         ensureColumn("daily_activities", "archived", "INTEGER NOT NULL DEFAULT 0");
+        ensureColumn("daily_activities", "team", "TEXT");
+        ensureColumn("daily_activities", "start_date", "TEXT");
+        ensureColumn("daily_activities", "end_date", "TEXT");
+        ensureColumn("daily_activities", "paused", "INTEGER NOT NULL DEFAULT 0");
         ensureColumn("technical_learning", "archived", "INTEGER NOT NULL DEFAULT 0");
     }
 

@@ -38,9 +38,12 @@ export interface DailyActivity {
   id: number;
   activityName: string;
   storyNumber?: string | null;
-  storyLink?: string | null;
+  team?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
   hoursSpend?: number | null;
   highlight?: boolean;
+  paused?: boolean;
   description?: string | null;
   archived?: boolean;
 }
@@ -48,9 +51,12 @@ export interface DailyActivity {
 export interface DailyActivityRequest {
   activityName: string;
   storyNumber?: string | null;
-  storyLink?: string | null;
+  team?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
   hoursSpend?: number | null;
   highlight?: boolean;
+  paused?: boolean;
   description?: string | null;
 }
 

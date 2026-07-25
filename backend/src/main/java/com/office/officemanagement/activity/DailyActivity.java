@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "daily_activities")
@@ -20,8 +21,12 @@ public class DailyActivity {
 
     private String storyNumber;
     private String storyLink;
+    private String team;
+    private LocalDate startDate;
+    private LocalDate endDate;
     private Double hoursSpend;
     private Boolean highlight;
+    private Boolean paused;
 
     @Column(columnDefinition = "TEXT")
     private String description;
@@ -64,6 +69,30 @@ public class DailyActivity {
         this.storyLink = storyLink;
     }
 
+    public String getTeam() {
+        return team;
+    }
+
+    public void setTeam(String team) {
+        this.team = team;
+    }
+
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
+
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
+    }
+
     public Double getHoursSpend() {
         return hoursSpend;
     }
@@ -78,6 +107,14 @@ public class DailyActivity {
 
     public void setHighlight(Boolean highlight) {
         this.highlight = highlight;
+    }
+
+    public Boolean getPaused() {
+        return paused;
+    }
+
+    public void setPaused(Boolean paused) {
+        this.paused = paused;
     }
 
     public String getDescription() {

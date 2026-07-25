@@ -9,13 +9,19 @@ export class TodoService {
 
   constructor(private http: HttpClient) {}
 
-  list(search?: string, accomplished?: boolean | null): Observable<Todo[]> {
+  list(search?: string, accomplished?: boolean | null, fromDate?: string, toDate?: string): Observable<Todo[]> {
     let params = new HttpParams();
     if (search && search.trim()) {
       params = params.set('search', search.trim());
     }
     if (accomplished !== null && accomplished !== undefined) {
       params = params.set('accomplished', String(accomplished));
+    }
+    if (fromDate) {
+      params = params.set('fromDate', fromDate);
+    }
+    if (toDate) {
+      params = params.set('toDate', toDate);
     }
     return this.http.get<Todo[]>(this.baseUrl, { params });
   }

@@ -32,9 +32,12 @@ public class TodoController {
     @GetMapping
     public List<Todo> list(
             @RequestParam(name = "search", required = false) String search,
-            @RequestParam(name = "accomplished", required = false) Boolean accomplished) {
-        // SQL handles the accomplished filter; multi-word search is applied in Java
-        List<Todo> all = repository.searchActive(null, accomplished);
+            @RequestParam(name = "accomplished", required = false) Boolean accomplished,
+            @RequestParam(name = "fromDate", required = false) String fromDate,
+            @RequestParam(name = "toDate", required = false) String toDate) {
+        LocalDate from = (fromDate != null && !fromDate.isBlank()) ? LocalDate.parse(fromDate) : null;
+        LocalDate to = (toDate != null && !toDate.isBlank()) ? LocalDate.parse(toDate) : null;
+        List<Todo> all = repository.searchActive(null, accomplished, from, to);
         if (search == null || search.isBlank()) {
             return all;
         }
