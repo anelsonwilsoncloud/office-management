@@ -4,7 +4,8 @@
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/anelsonwilson007/office-management)](https://hub.docker.com/r/anelsonwilson007/office-management)
 [![Docker Image Size](https://img.shields.io/docker/image-size/anelsonwilson007/office-management/latest)](https://hub.docker.com/r/anelsonwilson007/office-management)
-[![Build & Publish](https://github.com/anelsonwilsoncloud/office-management/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/anelsonwilsoncloud/office-management/actions/workflows/docker-publish.yml)
+[![Build & Publish Docker](https://github.com/anelsonwilsoncloud/office-management/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/anelsonwilsoncloud/office-management/actions/workflows/docker-publish.yml)
+[![Build & Publish Installer](https://github.com/anelsonwilsoncloud/office-management/actions/workflows/native-installer.yml/badge.svg)](https://github.com/anelsonwilsoncloud/office-management/actions/workflows/native-installer.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 Run the whole application — Angular UI, Spring Boot API, and database — with **one Docker command**. No build tools, no database server, no configuration.
@@ -26,6 +27,7 @@ Then open <http://localhost:9090>.
 - [Tech stack](#tech-stack)
 - [Why SQLite?](#why-sqlite-the-database-decision)
 - [Running with Docker](#running-with-docker-recommended)
+- [Native installer (no Docker / no Java required)](#native-installer-no-docker--no-java-required)
 - [Data, backups & upgrades](#data-backups--upgrades)
 - [Local development](#local-development-without-docker)
 - [API reference](#api-reference)
@@ -91,7 +93,7 @@ docker run -d --name office-management -p 9090:8080 `
 | Frontend  | Angular 18 (standalone components)          |
 | Backend   | Spring Boot 3 + Hibernate / JPA (REST API)  |
 | Database  | **SQLite** — a single portable file         |
-| Packaging | Docker (multi-stage) + Docker Compose       |
+| Packaging | Docker (multi-stage) + Docker Compose + **jpackage** (native installer) |
 | CI/CD     | GitHub Actions → Docker Hub                  |
 
 The Angular UI is built and served as static resources by Spring Boot, so the entire app runs as a **single container** on port `8080` (mapped to `9090` on your host).
@@ -107,6 +109,67 @@ The goal was a database that is **a file**, **easy to transfer between PCs**, an
 - ⚡ **No DB server, no passwords, smaller image** — simpler for everyone.
 
 > In-memory databases were rejected because they lose data on restart. Hibernate talks to SQLite via the community dialect (`org.hibernate.community.dialect.SQLiteDialect`) and the `xerial` JDBC driver.
+
+---
+
+## Native installer (no Docker / no Java required)
+
+`jpackage` (bundled in JDK 14+) wraps the app **plus a trimmed JRE** into a self-contained package. The end user installs or extracts it and double-clicks — no Java, no Docker, no configuration.
+
+### What the end user gets
+- **One-click download** — pre-built installers are published on the [**GitHub Releases**](https://github.com/anelsonwilsoncloud/office-management/releases) page.
+- **Automatic browser launch** — the default browser opens at `http://localhost:8080` on startup.
+- **System-tray icon** — right-click to re-open the browser or quit the app.
+- **Data in the user's home directory** — `~/.office-management/office.db` (Windows: `%USERPROFILE%\.office-management\office.db`).
+
+### Prerequisites (developer's machine only)
+| Tool | Version |
+|------|---------|
+| JDK  | 21+ (includes `jpackage`) |
+| Node.js | 18+ |
+| Maven | 3.9+ |
+| WiX Toolset | 3.x — **only** for `msi`/`exe` type on Windows ([wixtoolset.org](https://wixtoolset.org/)) |
+
+### Releasing a new version (triggers the CI build)
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+GitHub Actions will build the installer for Windows, Linux, and macOS and attach them to a new **GitHub Release** automatically. Users then download from the Releases page — no sharing zip files manually.
+
+### Build locally (developer's machine only)
+**Windows:**
+```powershell
+# Produces a self-contained folder in  installer\Office Management\
+.\build-installer.ps1
+
+# Produce an MSI installer instead (requires WiX Toolset 3.x)
+.\build-installer.ps1 -Type msi
+
+# Stamp a specific version
+.\build-installer.ps1 -Version 1.2.0 -Type msi
+```
+
+**Linux / macOS:**
+```bash
+chmod +x build-installer.sh
+
+# Produces a self-contained folder in  installer/Office Management/
+./build-installer.sh
+
+# Produce a .deb package on Ubuntu/Debian (requires fakeroot)
+./build-installer.sh 1.0.0 deb
+
+# Produce a .dmg on macOS
+./build-installer.sh 1.0.0 dmg
+```
+
+### Distributing to end users (app-image, the default)
+1. After the script finishes, zip the `installer/Office Management/` folder.
+2. Send the zip to the end user.
+3. They extract it and double-click **`Office Management.exe`** (Windows) or **`Office Management`** (Linux/macOS).
+
+> 💡 **Moving to a new PC?**  Copy `~/.office-management/office.db` to the same path on the new machine — all your data comes with you.
 
 ---
 
@@ -167,7 +230,7 @@ docker run -d --name office-management -p 9090:8080 \
 
 ## Local development (without Docker)
 
-**Backend** (serves the API on `:8080`, DB at `backend/data/office.db`):
+**Backend** (serves the API on `:8080`, DB at `~/.office-management/office.db`):
 ```bash
 cd backend
 mvn spring-boot:run
