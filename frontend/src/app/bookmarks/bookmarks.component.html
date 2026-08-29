@@ -3,10 +3,20 @@
     <h2>Add Bookmark</h2>
     <div class="header-actions">
       <button type="button" class="btn import-btn" (click)="triggerImport()" [disabled]="importing">
-        {{ importing ? 'Importing...' : 'Import Bookmarks' }}
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        {{ importing ? 'Importing...' : 'Import' }}
       </button>
       <button type="button" class="btn export-btn" (click)="exportBookmarks()">
-        Export Bookmarks
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        Export
       </button>
     </div>
   </div>
@@ -25,7 +35,16 @@
              placeholder="e.g. Work/Development or leave empty" />
     </label>
     <label>
-      <span>Additional Info</span>
+      <span class="additional-info-label">
+        Additional Info
+        <svg class="notepad-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+          <polyline points="10 9 9 9 8 9"/>
+        </svg>
+      </span>
       <input type="text" name="additionalInfo" [(ngModel)]="form.additionalInfo"
              placeholder="Any additional info" />
     </label>
@@ -67,36 +86,51 @@
       <thead>
         <tr>
           <th>Name</th>
-          <th>URL</th>
+          <th class="col-url">URL</th>
           <th>Folder</th>
-          <th>Additional Info</th>
           <th class="col-actions">Actions</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let b of bookmarks">
-          <td>{{ b.name }}</td>
+        <tr *ngFor="let b of bookmarks"
+            [class.selected-row]="selectedBookmark?.id === b.id"
+            (click)="selectRow(b)">
+          <td class="name-cell">
+            <span class="name-text">{{ b.name }}</span>
+            <span *ngIf="b.additionalInfo" class="notepad-wrapper"
+                  (mouseenter)="hoveredBookmark = b"
+                  (mouseleave)="hoveredBookmark = null"
+                  (click)="selectRow(b); $event.stopPropagation()">
+              <svg class="notepad-icon notepad-icon--row" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+                <polyline points="10 9 9 9 8 9"/>
+              </svg>
+              <span class="notepad-tooltip">{{ b.additionalInfo }}</span>
+            </span>
+          </td>
           <td class="url-cell">
-            <a [href]="b.url" target="_blank" rel="noopener noreferrer">{{ b.url }}</a>
-            <button type="button" class="icon-btn" title="Copy URL" (click)="copyUrl(b)">
+            <a [href]="b.url" target="_blank" rel="noopener noreferrer" (click)="$event.stopPropagation()">{{ b.url }}</a>
+            <button type="button" class="icon-btn" title="Copy URL" (click)="copyUrl(b); $event.stopPropagation()">
               {{ copiedId === b.id ? '✓' : '⧉' }}
             </button>
           </td>
           <td class="folder-cell">{{ b.folder || '—' }}</td>
-          <td>{{ b.additionalInfo }}</td>
           <td class="col-actions">
             <ng-container *ngIf="view === 'active'; else archivedActions">
-              <button type="button" class="btn small" (click)="edit(b)">Edit</button>
-              <button type="button" class="btn small danger" (click)="remove(b)">Delete</button>
+              <button type="button" class="btn small" (click)="edit(b); $event.stopPropagation()">Edit</button>
+              <button type="button" class="btn small danger" (click)="remove(b); $event.stopPropagation()">Delete</button>
             </ng-container>
             <ng-template #archivedActions>
-              <button type="button" class="btn small" (click)="restore(b)">Restore</button>
-              <button type="button" class="btn small danger" (click)="removePermanent(b)">Delete permanently</button>
+              <button type="button" class="btn small" (click)="restore(b); $event.stopPropagation()">Restore</button>
+              <button type="button" class="btn small danger" (click)="removePermanent(b); $event.stopPropagation()">Delete permanently</button>
             </ng-template>
           </td>
         </tr>
         <tr *ngIf="bookmarks.length === 0">
-          <td colspan="5" class="empty">
+          <td colspan="4" class="empty">
             {{ view === 'archived' ? 'No archived bookmarks.' : 'No bookmarks found.' }}
           </td>
         </tr>
@@ -104,3 +138,29 @@
     </table>
   </div>
 </section>
+
+<div class="additional-info-panel" [class.has-content]="selectedBookmark">
+  <ng-container *ngIf="selectedBookmark; else noSelection">
+    <span class="info-label">
+      <svg class="notepad-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="16" y1="13" x2="8" y2="13"/>
+        <line x1="16" y1="17" x2="8" y2="17"/>
+        <polyline points="10 9 9 9 8 9"/>
+      </svg>
+      Additional Info — <strong>{{ selectedBookmark.name }}</strong>:
+    </span>
+    <span class="info-value">{{ selectedBookmark.additionalInfo || '(no additional info)' }}</span>
+  </ng-container>
+  <ng-template #noSelection>
+    <svg class="notepad-icon notepad-icon--placeholder" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+      <line x1="16" y1="13" x2="8" y2="13"/>
+      <line x1="16" y1="17" x2="8" y2="17"/>
+      <polyline points="10 9 9 9 8 9"/>
+    </svg>
+    <span class="info-placeholder">Click a row or the notepad icon to view Additional Info</span>
+  </ng-template>
+</div>

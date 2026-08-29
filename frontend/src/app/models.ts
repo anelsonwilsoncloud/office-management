@@ -43,6 +43,7 @@ export interface DailyActivity {
   endDate?: string | null;
   hoursSpend?: number | null;
   highlight?: boolean;
+  highlighted?: boolean;
   paused?: boolean;
   description?: string | null;
   archived?: boolean;
@@ -56,6 +57,7 @@ export interface DailyActivityRequest {
   endDate?: string | null;
   hoursSpend?: number | null;
   highlight?: boolean;
+  highlighted?: boolean;
   paused?: boolean;
   description?: string | null;
 }
