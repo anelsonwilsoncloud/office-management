@@ -13,6 +13,7 @@ public class DailyActivityRequest {
     private LocalDate endDate;
     private Double hoursSpend;
     private Boolean highlight;
+    private Boolean highlighted;
     private Boolean paused;
     private String description;
 
@@ -70,6 +71,14 @@ public class DailyActivityRequest {
 
     public void setHighlight(Boolean highlight) {
         this.highlight = highlight;
+    }
+
+    public Boolean getHighlighted() {
+        return highlighted;
+    }
+
+    public void setHighlighted(Boolean highlighted) {
+        this.highlighted = highlighted;
     }
 
     public Boolean getPaused() {

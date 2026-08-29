@@ -15,7 +15,7 @@ type Tab = 'bookmarks' | 'todos' | 'activities' | 'learning';
   styleUrl: './app.component.scss'
 })
 export class AppComponent {
-  activeTab: Tab = 'bookmarks';
+  activeTab: Tab = 'todos';
 
   select(tab: Tab): void {
     this.activeTab = tab;

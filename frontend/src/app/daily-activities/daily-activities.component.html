@@ -29,14 +29,20 @@
       <span>End Date</span>
       <input type="date" name="endDate" [(ngModel)]="form.endDate" />
     </label>
-    <label class="checkbox-label">
-      <input type="checkbox" name="highlight" [(ngModel)]="form.highlight" />
-      <span>Completed</span>
-    </label>
-    <label class="checkbox-label">
-      <input type="checkbox" name="paused" [(ngModel)]="form.paused" (ngModelChange)="onPauseChange()" />
-      <span>Pause</span>
-    </label>
+    <div class="checkbox-group">
+      <label class="checkbox-label">
+        <input type="checkbox" name="highlight" [(ngModel)]="form.highlight" />
+        <span>Completed</span>
+      </label>
+      <label class="checkbox-label">
+        <input type="checkbox" name="highlighted" [(ngModel)]="form.highlighted" />
+        <span>Highlight</span>
+      </label>
+      <label class="checkbox-label">
+        <input type="checkbox" name="paused" [(ngModel)]="form.paused" (ngModelChange)="onPauseChange()" />
+        <span>Pause</span>
+      </label>
+    </div>
     <label class="full-width">
       <span>Description / Pausing Factor</span>
       <textarea name="description" [(ngModel)]="form.description" rows="2" placeholder="Any details"></textarea>
@@ -51,7 +57,16 @@
 
 <section class="panel">
   <div class="panel-head">
-    <h2>{{ view === 'archived' ? 'Archived Activities' : 'All Activities' }}</h2>
+    <h2>{{ view === 'archived' ? 'Archived Activities' : 'All Activities' }}
+      <button type="button" class="export-excel-btn" (click)="exportToExcel()" title="Export to Excel">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <polyline points="8 13 12 17 16 13"/>
+          <line x1="12" y1="17" x2="12" y2="10"/>
+        </svg>
+      </button>
+    </h2>
     <div class="head-tools">
       <div class="seg">
         <button type="button" [class.active]="view === 'active'" (click)="setView('active')">Active</button>
@@ -59,14 +74,30 @@
       </div>
       <ng-container *ngIf="view === 'active'">
         <div class="date-range-filter">
-          <label class="date-label">
-            <span>From</span>
-            <input type="date" [(ngModel)]="dateFrom" (ngModelChange)="load()" />
-          </label>
-          <label class="date-label">
-            <span>To</span>
-            <input type="date" [(ngModel)]="dateTo" (ngModelChange)="load()" />
-          </label>
+          <div class="date-nav-group">
+            <button type="button" class="arrow-btn" [disabled]="!dateFrom" (click)="shiftDateFrom(-1)" title="Previous day">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <label class="date-label">
+              <span>From</span>
+              <input type="date" [(ngModel)]="dateFrom" (ngModelChange)="load()" />
+            </label>
+            <button type="button" class="arrow-btn" [disabled]="!dateFrom" (click)="shiftDateFrom(1)" title="Next day">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+          <div class="date-nav-group">
+            <button type="button" class="arrow-btn" [disabled]="!dateTo" (click)="shiftDateTo(-1)" title="Previous day">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <label class="date-label">
+              <span>To</span>
+              <input type="date" [(ngModel)]="dateTo" (ngModelChange)="load()" />
+            </label>
+            <button type="button" class="arrow-btn" [disabled]="!dateTo" (click)="shiftDateTo(1)" title="Next day">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
           <button *ngIf="dateFrom || dateTo" type="button" class="btn small" (click)="clearDateFilter()">Clear</button>
         </div>
         <select class="team-filter" name="teamFilter" [(ngModel)]="teamFilter" (ngModelChange)="load()">
@@ -74,8 +105,16 @@
           <option *ngFor="let t of teams" [value]="t">{{ t }}</option>
         </select>
         <label class="pause-filter-label">
+          <input type="checkbox" [(ngModel)]="completedFilter" (ngModelChange)="load()" />
+          <span>Completed</span>
+        </label>
+        <label class="pause-filter-label">
           <input type="checkbox" [(ngModel)]="pausedFilter" (ngModelChange)="load()" />
           <span>Paused</span>
+        </label>
+        <label class="pause-filter-label">
+          <input type="checkbox" [(ngModel)]="highlightedFilter" (ngModelChange)="load()" />
+          <span>Highlight</span>
         </label>
         <input class="search" type="search" name="search"
                [(ngModel)]="search" (ngModelChange)="onSearchChange()"
@@ -95,20 +134,36 @@
           <th>End Date</th>
           <th>Hours</th>
           <th>Completed</th>
+          <th>Highlight</th>
           <th>Pause</th>
-          <th>Description</th>
           <th class="col-actions">Actions</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let a of activities" [class.highlighted-row]="a.highlight">
-          <td>{{ a.activityName }}</td>
+        <tr *ngFor="let a of activities"
+            [class.highlighted-row]="a.highlight"
+            [class.selected-row]="selectedActivity?.id === a.id"
+            (click)="selectActivity(a)">
+          <td class="name-cell">
+            <span class="name-text">{{ a.activityName }}</span>
+            <span *ngIf="a.description" class="notepad-wrapper"
+                  (click)="selectActivity(a); $event.stopPropagation()">
+              <svg class="notepad-icon notepad-icon--row" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+                <polyline points="10 9 9 9 8 9"/>
+              </svg>
+              <span class="notepad-tooltip">{{ a.description }}</span>
+            </span>
+          </td>
           <td class="story-cell">
             <ng-container *ngIf="a.storyNumber; else noStory">
               <a [href]="storyUrl(a.storyNumber)" target="_blank" rel="noopener noreferrer">{{ a.storyNumber }}</a>
               <button type="button" class="copy-btn"
                       [class.copied]="copySuccess === a.id"
-                      (click)="copyToClipboard(a.storyNumber, a.id)"
+                      (click)="copyToClipboard(a.storyNumber, a.id); $event.stopPropagation()"
                       title="Copy to clipboard">
                 <ng-container *ngIf="copySuccess !== a.id">
                   <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -130,6 +185,10 @@
             <span *ngIf="!a.highlight">-</span>
           </td>
           <td class="highlight-cell">
+            <span *ngIf="a.highlighted" class="highlighted-badge">★</span>
+            <span *ngIf="!a.highlighted">-</span>
+          </td>
+          <td class="highlight-cell">
             <span *ngIf="a.paused" class="pause-badge">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="white">
                 <rect x="5" y="3" width="4" height="18" rx="1"/>
@@ -138,15 +197,14 @@
             </span>
             <span *ngIf="!a.paused">-</span>
           </td>
-          <td>{{ a.description || '-' }}</td>
           <td class="col-actions">
             <ng-container *ngIf="view === 'active'; else archivedActions">
-              <button type="button" class="btn-grid" (click)="edit(a)">Edit</button>
-              <button type="button" class="btn-grid danger" (click)="remove(a.id)">Delete</button>
+              <button type="button" class="btn-grid" (click)="edit(a); $event.stopPropagation()">Edit</button>
+              <button type="button" class="btn-grid danger" (click)="remove(a.id); $event.stopPropagation()">Delete</button>
             </ng-container>
             <ng-template #archivedActions>
-              <button type="button" class="btn-grid" (click)="restore(a.id)">Restore</button>
-              <button type="button" class="btn-grid danger" (click)="removePermanent(a.id)">Permanent Delete</button>
+              <button type="button" class="btn-grid" (click)="restore(a.id); $event.stopPropagation()">Restore</button>
+              <button type="button" class="btn-grid danger" (click)="removePermanent(a.id); $event.stopPropagation()">Permanent Delete</button>
             </ng-template>
           </td>
         </tr>
@@ -161,3 +219,19 @@
     </table>
   </div>
 </section>
+
+<div class="description-panel" [class.has-content]="selectedActivity">
+  <ng-container *ngIf="selectedActivity; else noSelection">
+    <span class="desc-label">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="21" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/>
+        <line x1="21" y1="14" x2="3" y2="14"/><line x1="21" y1="18" x2="3" y2="18"/>
+      </svg>
+      Description — <strong>{{ selectedActivity.activityName }}</strong>:
+    </span>
+    <span class="desc-value">{{ selectedActivity.description || '(no description)' }}</span>
+  </ng-container>
+  <ng-template #noSelection>
+    <span class="desc-placeholder">Click a row to view its Description</span>
+  </ng-template>
+</div>

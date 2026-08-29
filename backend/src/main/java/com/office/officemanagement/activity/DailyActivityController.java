@@ -136,6 +136,7 @@ public class DailyActivityController {
         activity.setEndDate(request.getEndDate());
         activity.setHoursSpend(request.getHoursSpend());
         activity.setHighlight(request.getHighlight() != null && request.getHighlight());
+        activity.setHighlighted(request.getHighlighted() != null && request.getHighlighted());
         activity.setPaused(request.getPaused() != null && request.getPaused());
         activity.setDescription(
                 request.getDescription() == null || request.getDescription().trim().isEmpty()

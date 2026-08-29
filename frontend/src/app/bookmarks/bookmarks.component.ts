@@ -23,6 +23,8 @@ export class BookmarksComponent implements OnInit {
   importMessage = '';
   importing = false;
   copiedId: number | null = null;
+  selectedBookmark: Bookmark | null = null;
+  hoveredBookmark: Bookmark | null = null;
 
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
@@ -143,6 +145,10 @@ export class BookmarksComponent implements OnInit {
         this.error = 'Failed to import bookmarks. Make sure the file is a valid Chrome bookmark export.';
       }
     });
+  }
+
+  selectRow(bookmark: Bookmark): void {
+    this.selectedBookmark = this.selectedBookmark?.id === bookmark.id ? null : bookmark;
   }
 
   resetForm(): void {
