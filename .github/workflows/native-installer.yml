@@ -94,13 +94,15 @@ jobs:
             ICON_ARG="--icon frontend/public/favicon.ico"
           fi
           jpackage \
-            --input       backend/target \
-            --name        "Office Management" \
-            --main-jar    office-management.jar \
-            --type        app-image \
-            --app-version "${{ steps.ver.outputs.version }}" \
-            --description "Personal office activity, todos and bookmarks tracker" \
-            --dest        installer \
+            --input         backend/target \
+            --name          "Office Management" \
+            --main-jar      office-management.jar \
+            --main-class    org.springframework.boot.loader.launch.JarLauncher \
+            --type          app-image \
+            --app-version   "${{ steps.ver.outputs.version }}" \
+            --description   "Personal office activity, todos and bookmarks tracker" \
+            --java-options  "-Xms64m -Xmx512m" \
+            --dest          installer \
             $ICON_ARG
 
       # ── 5. Archive ────────────────────────────────────────────────────────────
