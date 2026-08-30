@@ -20,14 +20,16 @@ export class AppComponent implements OnInit {
   activeTab: Tab = 'todos';
   showSetup = false;
   setupDbPath = '';
+  setupFileBrowser = false;
 
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
-    this.http.get<{ firstRun: boolean; dbPath: string }>('/api/setup/status').subscribe({
+    this.http.get<{ firstRun: boolean; dbPath: string; fileBrowser: boolean }>('/api/setup/status').subscribe({
       next: res => {
         if (res.firstRun) {
           this.setupDbPath = res.dbPath;
+          this.setupFileBrowser = res.fileBrowser;
           this.showSetup = true;
         }
       },
@@ -44,9 +46,10 @@ export class AppComponent implements OnInit {
   }
 
   openSettings(): void {
-    this.http.get<{ firstRun: boolean; dbPath: string }>('/api/setup/status').subscribe({
+    this.http.get<{ firstRun: boolean; dbPath: string; fileBrowser: boolean }>('/api/setup/status').subscribe({
       next: res => {
         this.setupDbPath = res.dbPath;
+        this.setupFileBrowser = res.fileBrowser;
         this.showSetup = true;
       }
     });

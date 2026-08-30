@@ -14,6 +14,7 @@ import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 })
 export class SetupDialogComponent implements OnInit {
   @Input() defaultDbPath = '';
+  @Input() initialFileBrowser: boolean | null = null;
   @Output() setupComplete = new EventEmitter<void>();
 
   dbPath = '';
@@ -33,10 +34,15 @@ export class SetupDialogComponent implements OnInit {
     this.dbPath = this.defaultDbPath;
     this.checkPath(this.dbPath);
 
-    this.http.get<{ fileBrowser: boolean }>('/api/setup/capabilities').subscribe({
-      next: res => { this.fileBrowserAvailable = res.fileBrowser; },
-      error: ()  => { this.fileBrowserAvailable = false; }
-    });
+    if (this.initialFileBrowser !== null) {
+      // Already known from the status call — no need for a separate HTTP round-trip
+      this.fileBrowserAvailable = this.initialFileBrowser;
+    } else {
+      this.http.get<{ fileBrowser: boolean }>('/api/setup/capabilities').subscribe({
+        next: res => { this.fileBrowserAvailable = res.fileBrowser; },
+        error: ()  => { this.fileBrowserAvailable = false; }
+      });
+    }
 
     this.pathInput$.pipe(
       debounceTime(400),

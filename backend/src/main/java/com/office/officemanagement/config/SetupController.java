@@ -17,14 +17,14 @@ public class SetupController {
     /** Returns environment capabilities so the UI can show/hide features like Browse. */
     @GetMapping("/capabilities")
     public Map<String, Object> capabilities() {
-        boolean hasDesktop = !java.awt.GraphicsEnvironment.isHeadless();
-        return Map.of("fileBrowser", hasDesktop);
+        boolean isDesktop = "desktop".equals(System.getProperty("office.mode"));
+        return Map.of("fileBrowser", isDesktop);
     }
 
     /** Opens a native OS file chooser and returns the selected path. Only works in non-headless environments. */
     @GetMapping("/browse")
     public Map<String, Object> browse() {
-        if (java.awt.GraphicsEnvironment.isHeadless()) {
+        if (!"desktop".equals(System.getProperty("office.mode"))) {
             return Map.of("success", false, "reason", "headless");
         }
         try {
@@ -90,9 +90,11 @@ public class SetupController {
     @GetMapping("/status")
     public Map<String, Object> getStatus() {
         boolean firstRun = !Files.exists(ConfigPathInitializer.DB_PATH_FILE);
+        boolean isDesktop = "desktop".equals(System.getProperty("office.mode"));
         return Map.of(
                 "firstRun", firstRun,
-                "dbPath", extractDbPath(datasourceUrl)
+                "dbPath", extractDbPath(datasourceUrl),
+                "fileBrowser", isDesktop
         );
     }
 

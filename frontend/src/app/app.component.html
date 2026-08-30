@@ -1,6 +1,7 @@
 ﻿<app-setup-dialog
   *ngIf="showSetup"
   [defaultDbPath]="setupDbPath"
+  [initialFileBrowser]="setupFileBrowser"
   (setupComplete)="onSetupComplete()">
 </app-setup-dialog>
 
