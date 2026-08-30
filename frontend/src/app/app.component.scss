@@ -1,14 +1,40 @@
 ﻿.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 1rem;
-  h1 {
-    margin: 0;
-    font-size: 1.6rem;
-    color: #202124;
+
+  .header-left {
+    h1 {
+      margin: 0;
+      font-size: 1.6rem;
+      color: #202124;
+    }
+    .tagline {
+      margin: 0.25rem 0 0;
+      color: #5f6368;
+      font-size: 0.9rem;
+    }
   }
-  .tagline {
-    margin: 0.25rem 0 0;
-    color: #5f6368;
-    font-size: 0.9rem;
+}
+
+.settings-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #f8f9fa;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.85rem;
+  color: #5f6368;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+
+  &:hover {
+    background: #e8eaed;
+    color: #202124;
   }
 }
 
