@@ -24,15 +24,33 @@ public class ConfigPathInitializer implements ApplicationContextInitializer<Conf
 
     @Override
     public void initialize(ConfigurableApplicationContext ctx) {
+        // Always ensure the config/data directory exists before Spring touches the datasource
+        try {
+            Files.createDirectories(CONFIG_DIR);
+        } catch (IOException e) {
+            log.warn("Could not create config directory {}: {}", CONFIG_DIR, e.getMessage());
+        }
+
         if (Files.exists(DB_PATH_FILE)) {
             try {
                 String dbPath = Files.readString(DB_PATH_FILE).trim();
                 if (!dbPath.isEmpty()) {
+                    // Also ensure the parent directory of a custom DB path exists
+                    try {
+                        Files.createDirectories(Path.of(dbPath).getParent());
+                    } catch (Exception ignored) {}
                     System.setProperty("OFFICE_DB_PATH", dbPath);
                     log.info("Using configured database path: {}", dbPath);
                 }
             } catch (IOException e) {
                 log.warn("Could not read DB path config file: {}", e.getMessage());
+            }
+        } else {
+            // No custom path configured — ensure the default DB directory exists
+            try {
+                Files.createDirectories(CONFIG_DIR);
+            } catch (IOException e) {
+                log.warn("Could not create default DB directory: {}", e.getMessage());
             }
         }
     }
