@@ -103,6 +103,7 @@ jobs:
             --app-version   "${{ steps.ver.outputs.version }}" \
             --description   "Personal office activity, todos and bookmarks tracker" \
             --java-options  "-Xms64m -Xmx512m" \
+            --add-modules   ALL-MODULE-PATH \
             --dest          installer \
             $ICON_ARG
 
