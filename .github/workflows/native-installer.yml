@@ -91,12 +91,9 @@ jobs:
         run: |
           APP_DIR="installer/Office Management"
           mkdir -p "$APP_DIR/app"
-          mkdir -p "$APP_DIR/runtime"
 
-          # Copy ONLY the fat jar into a clean input folder
           cp backend/target/office-management.jar "$APP_DIR/app/office-management.jar"
 
-          # Build a self-contained JRE with jlink (all modules)
           jlink \
             --add-modules ALL-MODULE-PATH \
             --output "$APP_DIR/runtime" \
@@ -104,40 +101,19 @@ jobs:
             --no-header-files \
             --no-man-pages
 
-          # Windows launcher batch script
           if [[ "$RUNNER_OS" == "Windows" ]]; then
-            cat > "$APP_DIR/Start Office Management.bat" << 'WINEOF'
-@echo off
-title Office Management
-set "SCRIPT=%~dp0"
-start "" "%SCRIPT%runtime\bin\javaw.exe" ^
-  -Xms64m -Xmx512m ^
-  -jar "%SCRIPT%app\office-management.jar"
-WINEOF
+            printf '@echo off\r\ntitle Office Management\r\nset "SCRIPT=%%~dp0"\r\nstart "" "%%SCRIPT%%runtime\\bin\\javaw.exe" -Xms64m -Xmx512m -jar "%%SCRIPT%%app\\office-management.jar"\r\n' \
+              > "$APP_DIR/Start Office Management.bat"
           fi
 
-          # Linux launcher shell script
           if [[ "$RUNNER_OS" == "Linux" ]]; then
-            cat > "$APP_DIR/start.sh" << 'LINEOF'
-#!/usr/bin/env bash
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-"$SCRIPT_DIR/runtime/bin/java" \
-  -Xms64m -Xmx512m \
-  -jar "$SCRIPT_DIR/app/office-management.jar"
-LINEOF
+            printf '#!/usr/bin/env bash\nSCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"\n"$SCRIPT_DIR/runtime/bin/java" -Xms64m -Xmx512m -jar "$SCRIPT_DIR/app/office-management.jar"\n' \
+              > "$APP_DIR/start.sh"
             chmod +x "$APP_DIR/start.sh"
           fi
 
-          # Readme
-          cat > "$APP_DIR/README.txt" << 'README'
-Office Management – Quick Start
-================================
-Windows : Double-click  "Start Office Management.bat"
-Linux   : Run           ./start.sh
-
-Your browser will open at http://localhost:8080
-Your data is stored at:  ~/.office-management/office.db
-README
+          printf 'Office Management - Quick Start\n================================\nWindows : Double-click "Start Office Management.bat"\nLinux   : Run ./start.sh\n\nBrowser opens at http://localhost:8080\nData stored at: ~/.office-management/office.db\n' \
+            > "$APP_DIR/README.txt"
 
       # ── 5. Archive ────────────────────────────────────────────────────────────
       - name: Archive (Windows → zip)
