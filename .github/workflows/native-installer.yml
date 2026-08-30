@@ -26,9 +26,10 @@ jobs:
           - os: ubuntu-latest
             label: Linux
             archive_cmd: tar
-          - os: macos-latest
-            label: macOS
-            archive_cmd: zip
+          # macOS build temporarily disabled
+          # - os: macos-latest
+          #   label: macOS
+          #   archive_cmd: zip
 
     runs-on: ${{ matrix.os }}
 
