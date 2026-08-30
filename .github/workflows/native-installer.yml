@@ -85,52 +85,77 @@ jobs:
         working-directory: backend
         run: mvn -q -DskipTests package
 
-      # ── 4. jpackage ──────────────────────────────────────────────────────────
-      - name: Create app-image with jpackage
+      # ── 4. Bundle: JRE (jlink) + JAR + launcher script ───────────────────────
+      - name: Create application bundle
         shell: bash
         run: |
-          mkdir -p installer
-          ICON_ARG=""
-          if [[ "$RUNNER_OS" == "Windows" ]] && [[ -f "frontend/public/favicon.ico" ]]; then
-            ICON_ARG="--icon frontend/public/favicon.ico"
+          APP_DIR="installer/Office Management"
+          mkdir -p "$APP_DIR/app"
+          mkdir -p "$APP_DIR/runtime"
+
+          # Copy ONLY the fat jar into a clean input folder
+          cp backend/target/office-management.jar "$APP_DIR/app/office-management.jar"
+
+          # Build a self-contained JRE with jlink (all modules)
+          jlink \
+            --add-modules ALL-MODULE-PATH \
+            --output "$APP_DIR/runtime" \
+            --strip-debug \
+            --no-header-files \
+            --no-man-pages
+
+          # Windows launcher batch script
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            cat > "$APP_DIR/Start Office Management.bat" << 'WINEOF'
+@echo off
+title Office Management
+set "SCRIPT=%~dp0"
+start "" "%SCRIPT%runtime\bin\javaw.exe" ^
+  -Xms64m -Xmx512m ^
+  -jar "%SCRIPT%app\office-management.jar"
+WINEOF
           fi
-          jpackage \
-            --input         backend/target \
-            --name          "Office Management" \
-            --main-jar      office-management.jar \
-            --main-class    org.springframework.boot.loader.launch.JarLauncher \
-            --type          app-image \
-            --app-version   "${{ steps.ver.outputs.version }}" \
-            --description   "Personal office activity, todos and bookmarks tracker" \
-            --java-options  "-Xms64m -Xmx512m" \
-            --add-modules   ALL-MODULE-PATH \
-            --dest          installer \
-            $ICON_ARG
+
+          # Linux launcher shell script
+          if [[ "$RUNNER_OS" == "Linux" ]]; then
+            cat > "$APP_DIR/start.sh" << 'LINEOF'
+#!/usr/bin/env bash
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+"$SCRIPT_DIR/runtime/bin/java" \
+  -Xms64m -Xmx512m \
+  -jar "$SCRIPT_DIR/app/office-management.jar"
+LINEOF
+            chmod +x "$APP_DIR/start.sh"
+          fi
+
+          # Readme
+          cat > "$APP_DIR/README.txt" << 'README'
+Office Management – Quick Start
+================================
+Windows : Double-click  "Start Office Management.bat"
+Linux   : Run           ./start.sh
+
+Your browser will open at http://localhost:8080
+Your data is stored at:  ~/.office-management/office.db
+README
 
       # ── 5. Archive ────────────────────────────────────────────────────────────
-      - name: Archive (Windows / macOS → zip)
-        if: matrix.archive_cmd == 'zip'
+      - name: Archive (Windows → zip)
+        if: matrix.label == 'Windows'
         shell: bash
         run: |
-          cd installer
-          ASSET="office-management-${{ steps.ver.outputs.version }}-${{ matrix.label == 'Windows' && 'windows' || 'macos' }}.zip"
-          if [[ "$RUNNER_OS" == "Windows" ]]; then
-            powershell -Command "Compress-Archive -Path 'Office Management' -DestinationPath '$ASSET'"
-          else
-            # macOS jpackage produces a .app bundle
-            zip -r "$ASSET" "Office Management.app"
-          fi
-          echo "ASSET_PATH=installer/$ASSET" >> "$GITHUB_ENV"
+          ASSET="office-management-${{ steps.ver.outputs.version }}-windows.zip"
+          powershell -Command "Compress-Archive -Path 'installer\\Office Management' -DestinationPath '$ASSET'"
+          echo "ASSET_PATH=$ASSET" >> "$GITHUB_ENV"
           echo "ASSET_NAME=$ASSET" >> "$GITHUB_ENV"
 
       - name: Archive (Linux → tar.gz)
-        if: matrix.archive_cmd == 'tar'
+        if: matrix.label == 'Linux'
         shell: bash
         run: |
-          cd installer
           ASSET="office-management-${{ steps.ver.outputs.version }}-linux.tar.gz"
-          tar -czf "$ASSET" "Office Management"
-          echo "ASSET_PATH=installer/$ASSET" >> "$GITHUB_ENV"
+          tar -czf "$ASSET" -C installer "Office Management"
+          echo "ASSET_PATH=$ASSET" >> "$GITHUB_ENV"
           echo "ASSET_NAME=$ASSET" >> "$GITHUB_ENV"
 
       # ── 6. Upload to GitHub Release ──────────────────────────────────────────
@@ -153,9 +178,9 @@ jobs:
             ### How to install
             1. Download the file for your platform from the **Assets** section below
             2. Extract the archive
-            3. Run **`Office Management.exe`** (Windows) or **`Office Management`** (Linux/macOS)
-            4. Your browser opens automatically at **http://localhost:8080**
-            5. Use the **system-tray icon** to re-open or quit the app
+            3. **Windows**: Double-click **`Start Office Management.bat`**
+            4. **Linux**: Run **`./start.sh`** in terminal
+            5. Your browser opens automatically at **http://localhost:8080**
 
             > ✅ No Java or Docker required — the runtime is bundled inside.
             > 💾 Your data is saved to `~/.office-management/office.db`
