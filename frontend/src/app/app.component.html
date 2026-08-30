@@ -1,4 +1,10 @@
-﻿<header class="app-header">
+﻿<app-setup-dialog
+  *ngIf="showSetup"
+  [defaultDbPath]="setupDbPath"
+  (setupComplete)="onSetupComplete()">
+</app-setup-dialog>
+
+<header class="app-header">
   <h1>Office Management</h1>
   <p class="tagline">Track your bookmarks, todos &amp; more &mdash; fast search, more productivity.</p>
 </header>
