@@ -11,7 +11,7 @@ on:
       version:
         description: 'Version number (e.g. 1.2.0)'
         required: false
-        default: '0.0.0-test'
+        default: '0.0.1'
 
 jobs:
   build:
@@ -45,7 +45,7 @@ jobs:
           if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
             echo "version=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
           else
-            echo "version=${{ inputs.version || '0.0.0-test' }}" >> "$GITHUB_OUTPUT"
+            echo "version=${{ inputs.version || '0.0.1' }}" >> "$GITHUB_OUTPUT"
           fi
 
       # ── Node.js ─────────────────────────────────────────────────────────────
