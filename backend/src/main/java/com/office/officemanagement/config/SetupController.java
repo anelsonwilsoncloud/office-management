@@ -52,11 +52,16 @@ public class SetupController {
                     chooser.setSelectedFile(new java.io.File(ConfigPathInitializer.CONFIG_DIR.toFile(), "office.db"));
                 }
 
-                // Make dialog appear on top
+                // Create a tiny invisible-but-visible frame so the dialog gets a proper parent
+                // and always appears on top of the browser window
                 javax.swing.JFrame frame = new javax.swing.JFrame();
-                frame.setAlwaysOnTop(true);
-                frame.setVisible(false);
+                frame.setUndecorated(true);
+                frame.setSize(1, 1);
                 frame.setLocationRelativeTo(null);
+                frame.setAlwaysOnTop(true);
+                frame.setVisible(true);
+                frame.toFront();
+                frame.requestFocus();
 
                 int returnVal = chooser.showSaveDialog(frame);
                 frame.dispose();
