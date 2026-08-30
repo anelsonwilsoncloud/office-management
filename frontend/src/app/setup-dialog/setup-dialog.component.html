@@ -33,57 +33,94 @@
 
     <!-- Config form -->
     <ng-template #configForm>
-      <div class="form-group">
-        <label for="dbPath">Database file path</label>
-        <input id="dbPath" type="text" [ngModel]="dbPath" (ngModelChange)="onPathChange($event)"
-               placeholder="e.g. /Users/you/.office-management/office.db" />
 
-        <!-- Existing DB detected -->
-        <div class="path-status existing" *ngIf="dbExists === true">
-          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
-               fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12"/>
+      <!-- Docker/server mode: path is managed externally -->
+      <ng-container *ngIf="!fileBrowserAvailable; else desktopForm">
+        <div class="docker-info">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+               fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
           </svg>
-          Existing database found — your data will be preserved, nothing will be overwritten.
+          <div>
+            <strong>Running in Docker / Server mode</strong>
+            <p>The database path is managed by your <code>docker-compose.yml</code> and cannot be changed here.</p>
+            <p>Current path inside container:<br><code>{{ dbPath }}</code></p>
+            <p>To use a different database, update <code>OFFICE_DB_PATH</code> in your <code>docker-compose.yml</code>.</p>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn-primary" (click)="confirm()">Got it &amp; Continue</button>
+        </div>
+      </ng-container>
+
+      <!-- Desktop/native installer mode: allow path editing -->
+      <ng-template #desktopForm>
+        <div class="form-group">
+          <label for="dbPath">Database file path</label>
+          <div class="path-input-row">
+            <input id="dbPath" type="text" [ngModel]="dbPath" (ngModelChange)="onPathChange($event)"
+                   placeholder="e.g. C:\Users\you\.office-management\office.db" />
+            <button type="button" class="browse-btn" (click)="browse()" [disabled]="browsing" title="Browse for file">
+              <svg *ngIf="!browsing" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+              </svg>
+              <svg *ngIf="browsing" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                   class="spin">
+                <line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/>
+                <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/>
+                <line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/>
+                <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/>
+              </svg>
+              {{ browsing ? '...' : 'Browse' }}
+            </button>
+          </div>
+
+          <!-- Existing DB detected -->
+          <div class="path-status existing" *ngIf="dbExists === true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Existing database found — your data will be preserved, nothing will be overwritten.
+          </div>
+
+          <!-- New DB will be created -->
+          <div class="path-status new-db" *ngIf="dbExists === false">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/>
+              <line x1="8" y1="12" x2="16" y2="12"/>
+            </svg>
+            No database found at this path — a new one will be created here.
+          </div>
+
+          <!-- Checking -->
+          <div class="path-status checking" *ngIf="dbExists === null && dbPath.trim()">
+            Checking path...
+          </div>
+
+          <span class="hint">Tip: point to an existing <code>office.db</code> to restore your previous data.</span>
         </div>
 
-        <!-- New DB will be created -->
-        <div class="path-status new-db" *ngIf="dbExists === false">
-          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
-               fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/>
-            <line x1="8" y1="12" x2="16" y2="12"/>
-          </svg>
-          No database found at this path — a new one will be created here.
+        <div class="error-msg" *ngIf="error">{{ error }}</div>
+
+        <div class="actions">
+          <button class="btn-primary" (click)="confirm()" [disabled]="saving || !dbPath.trim()">
+            <svg *ngIf="saving" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                 class="spin">
+              <line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/>
+              <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/>
+              <line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/>
+              <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/>
+            </svg>
+            {{ saving ? 'Saving...' : 'Confirm &amp; Continue' }}
+          </button>
         </div>
+      </ng-template>
 
-        <!-- Checking -->
-        <div class="path-status checking" *ngIf="dbExists === null && dbPath.trim()">
-          Checking path...
-        </div>
-
-        <span class="hint">Tip: point to an existing <code>office.db</code> to restore your previous data.</span>
-      </div>
-
-      <div class="error-msg" *ngIf="error">{{ error }}</div>
-
-      <div class="actions">
-        <button class="btn-primary" (click)="confirm()" [disabled]="saving || !dbPath.trim()">
-          <svg *ngIf="saving" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-               class="spin">
-            <line x1="12" y1="2" x2="12" y2="6"/>
-            <line x1="12" y1="18" x2="12" y2="22"/>
-            <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/>
-            <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/>
-            <line x1="2" y1="12" x2="6" y2="12"/>
-            <line x1="18" y1="12" x2="22" y2="12"/>
-            <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/>
-            <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/>
-          </svg>
-          {{ saving ? 'Saving...' : 'Confirm &amp; Continue' }}
-        </button>
-      </div>
     </ng-template>
 
   </div>

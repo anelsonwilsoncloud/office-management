@@ -23,6 +23,8 @@ export class SetupDialogComponent implements OnInit {
 
   /** null = checking, true = exists, false = new file */
   dbExists: boolean | null = null;
+  browsing = false;
+  fileBrowserAvailable = false;
   private pathInput$ = new Subject<string>();
 
   constructor(private http: HttpClient) {}
@@ -31,6 +33,11 @@ export class SetupDialogComponent implements OnInit {
     this.dbPath = this.defaultDbPath;
     this.checkPath(this.dbPath);
 
+    this.http.get<{ fileBrowser: boolean }>('/api/setup/capabilities').subscribe({
+      next: res => { this.fileBrowserAvailable = res.fileBrowser; },
+      error: ()  => { this.fileBrowserAvailable = false; }
+    });
+
     this.pathInput$.pipe(
       debounceTime(400),
       distinctUntilChanged(),
@@ -38,6 +45,19 @@ export class SetupDialogComponent implements OnInit {
     ).subscribe({
       next: res => { this.dbExists = res.exists; },
       error: ()  => { this.dbExists = null; }
+    });
+  }
+
+  browse(): void {
+    this.browsing = true;
+    this.http.get<{ success: boolean; path?: string; reason?: string }>('/api/setup/browse').subscribe({
+      next: res => {
+        this.browsing = false;
+        if (res.success && res.path) {
+          this.onPathChange(res.path);
+        }
+      },
+      error: () => { this.browsing = false; }
     });
   }
 

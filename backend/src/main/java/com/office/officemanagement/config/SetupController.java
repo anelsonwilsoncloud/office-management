@@ -14,6 +14,71 @@ public class SetupController {
     @Value("${spring.datasource.url}")
     private String datasourceUrl;
 
+    /** Returns environment capabilities so the UI can show/hide features like Browse. */
+    @GetMapping("/capabilities")
+    public Map<String, Object> capabilities() {
+        boolean hasDesktop = !java.awt.GraphicsEnvironment.isHeadless();
+        return Map.of("fileBrowser", hasDesktop);
+    }
+
+    /** Opens a native OS file chooser and returns the selected path. Only works in non-headless environments. */
+    @GetMapping("/browse")
+    public Map<String, Object> browse() {
+        if (java.awt.GraphicsEnvironment.isHeadless()) {
+            return Map.of("success", false, "reason", "headless");
+        }
+        try {
+            String[] result = new String[1];
+            java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
+
+            java.awt.EventQueue.invokeLater(() -> {
+                try {
+                    javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
+                } catch (Exception ignored) {}
+
+                javax.swing.JFileChooser chooser = new javax.swing.JFileChooser();
+                chooser.setDialogTitle("Select or create database file");
+                chooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
+                chooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("SQLite Database (*.db)", "db"));
+
+                // Pre-select current path if exists
+                String current = System.getProperty("OFFICE_DB_PATH");
+                if (current != null && !current.isBlank()) {
+                    java.io.File f = new java.io.File(current);
+                    chooser.setCurrentDirectory(f.getParentFile());
+                    chooser.setSelectedFile(f);
+                } else {
+                    chooser.setCurrentDirectory(ConfigPathInitializer.CONFIG_DIR.toFile());
+                    chooser.setSelectedFile(new java.io.File(ConfigPathInitializer.CONFIG_DIR.toFile(), "office.db"));
+                }
+
+                // Make dialog appear on top
+                javax.swing.JFrame frame = new javax.swing.JFrame();
+                frame.setAlwaysOnTop(true);
+                frame.setVisible(false);
+                frame.setLocationRelativeTo(null);
+
+                int returnVal = chooser.showSaveDialog(frame);
+                frame.dispose();
+
+                if (returnVal == javax.swing.JFileChooser.APPROVE_OPTION) {
+                    String path = chooser.getSelectedFile().getAbsolutePath();
+                    if (!path.endsWith(".db")) path += ".db";
+                    result[0] = path;
+                }
+                latch.countDown();
+            });
+
+            latch.await(15, java.util.concurrent.TimeUnit.SECONDS);
+            if (result[0] != null) {
+                return Map.of("success", true, "path", result[0]);
+            }
+            return Map.of("success", false, "reason", "cancelled");
+        } catch (Exception e) {
+            return Map.of("success", false, "reason", e.getMessage());
+        }
+    }
+
     /** Checks whether a given file path points to an existing file. */
     @GetMapping("/check-path")
     public Map<String, Object> checkPath(@RequestParam String path) {

@@ -42,4 +42,13 @@ export class AppComponent implements OnInit {
   onSetupComplete(): void {
     this.showSetup = false;
   }
+
+  openSettings(): void {
+    this.http.get<{ firstRun: boolean; dbPath: string }>('/api/setup/status').subscribe({
+      next: res => {
+        this.setupDbPath = res.dbPath;
+        this.showSetup = true;
+      }
+    });
+  }
 }
