@@ -90,7 +90,9 @@ jobs:
         run: |
           mkdir -p installer
           ICON_ARG=""
-          [[ -f "frontend/public/favicon.ico" ]] && ICON_ARG="--icon frontend/public/favicon.ico"
+          if [[ "$RUNNER_OS" == "Windows" ]] && [[ -f "frontend/public/favicon.ico" ]]; then
+            ICON_ARG="--icon frontend/public/favicon.ico"
+          fi
           jpackage \
             --input       backend/target \
             --name        "Office Management" \
@@ -111,7 +113,8 @@ jobs:
           if [[ "$RUNNER_OS" == "Windows" ]]; then
             powershell -Command "Compress-Archive -Path 'Office Management' -DestinationPath '$ASSET'"
           else
-            zip -r "$ASSET" "Office Management"
+            # macOS jpackage produces a .app bundle
+            zip -r "$ASSET" "Office Management.app"
           fi
           echo "ASSET_PATH=installer/$ASSET" >> "$GITHUB_ENV"
           echo "ASSET_NAME=$ASSET" >> "$GITHUB_ENV"
