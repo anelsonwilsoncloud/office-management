@@ -102,7 +102,7 @@ jobs:
             --no-man-pages
 
           if [[ "$RUNNER_OS" == "Windows" ]]; then
-            printf '@echo off\r\ntitle Office Management\r\nset "SCRIPT=%%~dp0"\r\nstart "" "%%SCRIPT%%runtime\\bin\\javaw.exe" -Xms64m -Xmx512m -jar "%%SCRIPT%%app\\office-management.jar"\r\n' \
+            printf '@echo off\r\ntitle Office Management\r\nset "SCRIPT=%%~dp0"\r\necho Starting Office Management...\r\necho Browser will open at http://localhost:8080\r\necho.\r\n"%%SCRIPT%%runtime\\bin\\java.exe" -Xms64m -Xmx512m -jar "%%SCRIPT%%app\\office-management.jar"\r\nif %%ERRORLEVEL%% neq 0 (\r\n  echo.\r\n  echo ERROR: Application failed to start. See output above.\r\n  pause\r\n)\r\n' \
               > "$APP_DIR/Start Office Management.bat"
           fi
 
