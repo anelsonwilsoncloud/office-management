@@ -1,11 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { DailyActivity, DailyActivityRequest } from './models';
+import { Observable, Subject } from 'rxjs';
+import { DailyActivity, DailyActivityRequest, TeamOption } from './models';
 
 @Injectable({ providedIn: 'root' })
 export class DailyActivityService {
   private readonly baseUrl = '/api/activities';
+  private readonly teamOptionsBaseUrl = '/api/settings/teams';
+  private readonly teamOptionsChangedSubject = new Subject<void>();
+  readonly teamOptionsChanged$ = this.teamOptionsChangedSubject.asObservable();
 
   constructor(private http: HttpClient) {}
 
@@ -48,5 +51,23 @@ export class DailyActivityService {
 
   removePermanent(id: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${id}/permanent`);
+  }
+
+  listTeamOptions(): Observable<TeamOption[]> {
+    return this.http.get<TeamOption[]>(this.teamOptionsBaseUrl);
+  }
+
+  addTeamOption(name: string): Observable<TeamOption[]> {
+    return this.http.post<TeamOption[]>(this.teamOptionsBaseUrl, { name });
+  }
+
+  removeTeamOption(name: string): Observable<TeamOption[]> {
+    return this.http.delete<TeamOption[]>(this.teamOptionsBaseUrl, {
+      params: new HttpParams().set('name', name)
+    });
+  }
+
+  notifyTeamOptionsChanged(): void {
+    this.teamOptionsChangedSubject.next();
   }
 }

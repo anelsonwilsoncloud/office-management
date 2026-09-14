@@ -1,11 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { DailyActivity, DailyActivityRequest } from '../models';
+import { DailyActivity, DailyActivityRequest, TeamOption } from '../models';
 import { DailyActivityService } from '../daily-activity.service';
 import * as XLSX from 'xlsx';
-
-export type TeamOption = 'FUX' | 'TCP' | 'IRAM' | 'AI' | 'OTHER';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-daily-activities',
@@ -14,11 +13,12 @@ export type TeamOption = 'FUX' | 'TCP' | 'IRAM' | 'AI' | 'OTHER';
   templateUrl: './daily-activities.component.html',
   styleUrl: './daily-activities.component.scss'
 })
-export class DailyActivitiesComponent implements OnInit {
-  readonly teams: TeamOption[] = ['FUX', 'TCP', 'IRAM', 'AI', 'OTHER'];
+export class DailyActivitiesComponent implements OnInit, OnDestroy {
   readonly jiraBaseUrl = 'https://atc.bmwgroup.net/jira/browse/';
 
   activities: DailyActivity[] = [];
+  teamOptions: TeamOption[] = [];
+  teams: string[] = [];
   search = '';
   teamFilter = '';
   dateFrom = '';
@@ -33,11 +33,22 @@ export class DailyActivitiesComponent implements OnInit {
   error = '';
   copySuccess: number | null = null;
   selectedActivity: DailyActivity | null = null;
+  private readonly destroy$ = new Subject<void>();
 
-  constructor(private activityService: DailyActivityService) {}
+  constructor(private activityService: DailyActivityService) {
+    this.activityService.teamOptionsChanged$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.loadTeamOptions());
+  }
 
   ngOnInit(): void {
+    this.loadTeamOptions();
     this.load();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   load(): void {
@@ -54,6 +65,19 @@ export class DailyActivitiesComponent implements OnInit {
         this.activities = result;
       },
       error: () => (this.error = 'Failed to load activities')
+    });
+  }
+
+  loadTeamOptions(): void {
+    this.activityService.listTeamOptions().subscribe({
+      next: (options) => {
+        this.teamOptions = options;
+        this.teams = options.map(option => option.name);
+      },
+      error: () => {
+        this.teamOptions = [];
+        this.teams = [];
+      }
     });
   }
 

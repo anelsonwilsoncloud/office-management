@@ -62,6 +62,13 @@ export interface DailyActivityRequest {
   description?: string | null;
 }
 
+export interface TeamOption {
+  name: string;
+  isDefault: boolean;
+  inUseCount: number;
+  removable: boolean;
+}
+
 export type LearningPriority = 'ok' | 'imp' | 'v.imp';
 
 export interface TechnicalLearning {
