@@ -34,6 +34,13 @@ export interface TodoRequest {
   accomplished: boolean;
 }
 
+export interface TodoReminder {
+  todoId: number;
+  todoName: string;
+  dueAt: string;
+  createdAt: string;
+}
+
 export interface DailyActivity {
   id: number;
   activityName: string;
@@ -60,6 +67,13 @@ export interface DailyActivityRequest {
   highlighted?: boolean;
   paused?: boolean;
   description?: string | null;
+}
+
+export interface TeamOption {
+  name: string;
+  isDefault: boolean;
+  inUseCount: number;
+  removable: boolean;
 }
 
 export type LearningPriority = 'ok' | 'imp' | 'v.imp';

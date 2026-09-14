@@ -39,6 +39,8 @@ public class SqliteSchemaMigrator implements ApplicationRunner {
         ensureColumn("daily_activities", "paused", "INTEGER NOT NULL DEFAULT 0");
         ensureColumn("daily_activities", "highlighted", "INTEGER NOT NULL DEFAULT 0");
         ensureColumn("technical_learning", "archived", "INTEGER NOT NULL DEFAULT 0");
+        ensureTeamOptionsTable();
+        seedDefaultTeams();
     }
 
     private void ensureColumn(String table, String column, String columnDefinition) {
@@ -59,5 +61,18 @@ public class SqliteSchemaMigrator implements ApplicationRunner {
     private boolean columnExists(String table, String column) {
         return jdbc.queryForList("PRAGMA table_info(" + table + ")").stream()
                 .anyMatch(row -> column.equalsIgnoreCase(String.valueOf(row.get("name"))));
+    }
+
+    private void ensureTeamOptionsTable() {
+        jdbc.execute("CREATE TABLE IF NOT EXISTS team_options (" +
+                "name TEXT PRIMARY KEY," +
+                "is_default INTEGER NOT NULL DEFAULT 0" +
+                ")");
+    }
+
+    private void seedDefaultTeams() {
+        for (String team : com.office.officemanagement.activity.TeamOptionService.DEFAULT_TEAMS) {
+            jdbc.update("INSERT OR IGNORE INTO team_options (name, is_default) VALUES (?, 1)", team);
+        }
     }
 }

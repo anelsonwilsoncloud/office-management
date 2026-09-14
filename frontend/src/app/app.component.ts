@@ -19,6 +19,7 @@ type Tab = 'bookmarks' | 'todos' | 'activities' | 'learning';
 export class AppComponent implements OnInit {
   activeTab: Tab = 'todos';
   showSetup = false;
+  settingsMode = false;
   setupDbPath = '';
   setupFileBrowser = false;
 
@@ -30,6 +31,7 @@ export class AppComponent implements OnInit {
         if (res.firstRun) {
           this.setupDbPath = res.dbPath;
           this.setupFileBrowser = res.fileBrowser;
+          this.settingsMode = false;
           this.showSetup = true;
         }
       },
@@ -43,6 +45,7 @@ export class AppComponent implements OnInit {
 
   onSetupComplete(): void {
     this.showSetup = false;
+    this.settingsMode = false;
   }
 
   openSettings(): void {
@@ -50,6 +53,7 @@ export class AppComponent implements OnInit {
       next: res => {
         this.setupDbPath = res.dbPath;
         this.setupFileBrowser = res.fileBrowser;
+        this.settingsMode = true;
         this.showSetup = true;
       }
     });

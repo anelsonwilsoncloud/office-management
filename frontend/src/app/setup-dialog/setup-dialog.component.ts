@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
+import { DailyActivityService } from '../daily-activity.service';
+import { TeamOption } from '../models';
 
 @Component({
   selector: 'app-setup-dialog',
@@ -15,6 +17,7 @@ import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 export class SetupDialogComponent implements OnInit {
   @Input() defaultDbPath = '';
   @Input() initialFileBrowser: boolean | null = null;
+  @Input() settingsMode = false;
   @Output() setupComplete = new EventEmitter<void>();
 
   dbPath = '';
@@ -26,13 +29,21 @@ export class SetupDialogComponent implements OnInit {
   dbExists: boolean | null = null;
   browsing = false;
   fileBrowserAvailable = false;
+  activeSettingsTab: 'database' | 'teams' = 'database';
+  teamOptions: TeamOption[] = [];
+  teamName = '';
+  teamLoading = false;
+  teamSaving = false;
+  teamRemoving: string | null = null;
+  teamError = '';
   private pathInput$ = new Subject<string>();
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private activityService: DailyActivityService) {}
 
   ngOnInit(): void {
     this.dbPath = this.defaultDbPath;
     this.checkPath(this.dbPath);
+    this.activeSettingsTab = 'database';
 
     if (this.initialFileBrowser !== null) {
       // Already known from the status call — no need for a separate HTTP round-trip
@@ -52,6 +63,10 @@ export class SetupDialogComponent implements OnInit {
       next: res => { this.dbExists = res.exists; },
       error: ()  => { this.dbExists = null; }
     });
+
+    if (this.settingsMode) {
+      this.loadTeams();
+    }
   }
 
   browse(): void {
@@ -104,5 +119,69 @@ export class SetupDialogComponent implements OnInit {
 
   restartAcknowledged(): void {
     this.setupComplete.emit();
+  }
+
+  closeDialog(): void {
+    this.setupComplete.emit();
+  }
+
+  selectSettingsTab(tab: 'database' | 'teams'): void {
+    this.activeSettingsTab = tab;
+  }
+
+  loadTeams(): void {
+    this.teamLoading = true;
+    this.activityService.listTeamOptions().subscribe({
+      next: teams => {
+        this.teamOptions = teams;
+        this.teamError = '';
+        this.teamLoading = false;
+      },
+      error: () => {
+        this.teamOptions = [];
+        this.teamLoading = false;
+        this.teamError = 'Could not load team settings.';
+      }
+    });
+  }
+
+  addTeam(): void {
+    const name = this.teamName.trim();
+    if (!name) return;
+
+    this.teamSaving = true;
+    this.teamError = '';
+    this.activityService.addTeamOption(name).subscribe({
+      next: teams => {
+        this.teamOptions = teams;
+        this.teamName = '';
+        this.teamSaving = false;
+        this.teamError = '';
+        this.activityService.notifyTeamOptionsChanged();
+      },
+      error: err => {
+        this.teamSaving = false;
+        this.teamError = err?.error?.message || 'Could not add the team.';
+      }
+    });
+  }
+
+  removeTeam(team: TeamOption): void {
+    if (!team.removable || this.teamRemoving) return;
+
+    this.teamRemoving = team.name;
+    this.teamError = '';
+    this.activityService.removeTeamOption(team.name).subscribe({
+      next: teams => {
+        this.teamOptions = teams;
+        this.teamRemoving = null;
+        this.teamError = '';
+        this.activityService.notifyTeamOptionsChanged();
+      },
+      error: err => {
+        this.teamRemoving = null;
+        this.teamError = err?.error?.message || 'Could not remove the team.';
+      }
+    });
   }
 }

@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Priority, Todo, TodoRequest } from '../models';
+import { Priority, Todo, TodoReminder, TodoRequest } from '../models';
 import { TodoService } from '../todo.service';
+import { TodoReminderService } from '../todo-reminder.service';
 
 type SortDir = 'asc' | 'desc';
 
@@ -16,6 +17,7 @@ type SortDir = 'asc' | 'desc';
 export class TodosComponent implements OnInit {
   readonly priorities: Priority[] = ['LOW', 'MEDIUM', 'HIGH'];
   private readonly priorityRank: Record<Priority, number> = { LOW: 0, MEDIUM: 1, HIGH: 2 };
+  readonly reminderHourOptions = Array.from({ length: 18 }, (_, index) => (index + 1) * 0.5);
 
   todos: Todo[] = [];
   pastPending: Todo[] = [];
@@ -31,14 +33,17 @@ export class TodosComponent implements OnInit {
   dateTo = '';
 
   prioritySort: SortDir | null = null;
+  reminderMenuTodoId: number | null = null;
+  reminderHours = 0.5;
 
   form: TodoRequest = this.emptyForm();
   editingId: number | null = null;
   error = '';
 
-  constructor(private service: TodoService) {}
+  constructor(private service: TodoService, private reminderService: TodoReminderService) {}
 
   ngOnInit(): void {
+    this.reminderService.init();
     this.loadAll();
   }
 
@@ -54,6 +59,7 @@ export class TodosComponent implements OnInit {
 
   setView(view: 'active' | 'archived'): void {
     this.view = view;
+    this.closeReminderMenu();
     if (view === 'archived') {
       this.resetForm();
     }
@@ -67,6 +73,7 @@ export class TodosComponent implements OnInit {
       next: (data) => {
         this.todos = data;
         this.applyPrioritySort();
+        this.todos.forEach(todo => this.reminderService.syncTodo(todo));
       },
       error: () => (this.error = 'Failed to load todos')
     });
@@ -105,7 +112,8 @@ export class TodosComponent implements OnInit {
         : this.service.update(this.editingId, this.form);
 
     request$.subscribe({
-      next: () => {
+      next: (todo) => {
+        this.reminderService.syncTodo(todo);
         this.resetForm();
         this.loadAll();
       },
@@ -114,6 +122,7 @@ export class TodosComponent implements OnInit {
   }
 
   edit(todo: Todo): void {
+    this.closeReminderMenu();
     this.editingId = todo.id;
     this.form = {
       name: todo.name,
@@ -130,9 +139,11 @@ export class TodosComponent implements OnInit {
     }
     this.service.remove(todo.id).subscribe({
       next: () => {
+        this.reminderService.cancel(todo.id);
         if (this.editingId === todo.id) {
           this.resetForm();
         }
+        this.closeReminderMenu();
         this.loadAll();
       },
       error: () => (this.error = 'Failed to archive todo')
@@ -141,7 +152,10 @@ export class TodosComponent implements OnInit {
 
   restore(todo: Todo): void {
     this.service.restore(todo.id).subscribe({
-      next: () => this.loadAll(),
+      next: (restored) => {
+        this.reminderService.syncTodo(restored);
+        this.loadAll();
+      },
       error: () => (this.error = 'Failed to restore todo')
     });
   }
@@ -151,7 +165,11 @@ export class TodosComponent implements OnInit {
       return;
     }
     this.service.removePermanent(todo.id).subscribe({
-      next: () => this.loadAll(),
+      next: () => {
+        this.reminderService.cancel(todo.id);
+        this.closeReminderMenu();
+        this.loadAll();
+      },
       error: () => (this.error = 'Failed to delete todo')
     });
   }
@@ -164,12 +182,91 @@ export class TodosComponent implements OnInit {
       description: todo.description ?? '',
       accomplished: !todo.accomplished
     };
-    this.service.update(todo.id, body).subscribe({ next: () => this.loadAll() });
+    this.service.update(todo.id, body).subscribe({
+      next: (updated) => {
+        if (updated.accomplished) {
+          this.reminderService.cancel(updated.id);
+        } else {
+          this.reminderService.syncTodo(updated);
+        }
+        this.loadAll();
+      }
+    });
   }
 
   resetForm(): void {
     this.editingId = null;
     this.form = this.emptyForm();
+  }
+
+  toggleReminderMenu(todo: Todo): void {
+    if (this.reminderMenuTodoId === todo.id) {
+      this.closeReminderMenu();
+      return;
+    }
+    const reminder = this.reminderService.get(todo.id);
+    this.reminderMenuTodoId = todo.id;
+    this.reminderHours = reminder ? this.hoursUntil(reminder.dueAt) : 0.5;
+    if (this.reminderHours < 0.5) {
+    this.reminderHours = 0.5;
+    }
+  }
+
+  closeReminderMenu(): void {
+    this.reminderMenuTodoId = null;
+  }
+
+  reminderFor(todoId: number): TodoReminder | null {
+    return this.reminderService.get(todoId);
+  }
+
+  reminderLabel(todoId: number): string {
+    const reminder = this.reminderService.get(todoId);
+    if (!reminder) {
+      return '';
+    }
+    const remainingMs = new Date(reminder.dueAt).getTime() - Date.now();
+    if (remainingMs <= 0) {
+      return 'due now';
+    }
+    const totalMinutes = Math.ceil(remainingMs / 60000);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    if (hours > 0 && minutes > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    if (hours > 0) {
+      return `${hours}h`;
+    }
+    return `${minutes}m`;
+  }
+
+  reminderTooltip(todoId: number): string {
+    const reminder = this.reminderService.get(todoId);
+    if (!reminder) {
+      return '';
+    }
+    return `Reminder due at ${new Date(reminder.dueAt).toLocaleString()}`;
+  }
+
+  async setReminder(todo: Todo): Promise<void> {
+    this.error = '';
+    try {
+      await this.reminderService.schedule(todo, this.reminderHours);
+      this.closeReminderMenu();
+    } catch (err) {
+      this.error = err instanceof Error ? err.message : 'Could not set reminder';
+    }
+  }
+
+  clearReminder(todo: Todo): void {
+    this.reminderService.cancel(todo.id);
+    this.closeReminderMenu();
+  }
+
+  private hoursUntil(dueAt: string): number {
+    const diff = new Date(dueAt).getTime() - Date.now();
+    return Math.max(0.5, Math.round(diff / 1800000) / 2);
   }
 
   private emptyForm(): TodoRequest {

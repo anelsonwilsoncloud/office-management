@@ -2,6 +2,7 @@
   *ngIf="showSetup"
   [defaultDbPath]="setupDbPath"
   [initialFileBrowser]="setupFileBrowser"
+  [settingsMode]="settingsMode"
   (setupComplete)="onSetupComplete()">
 </app-setup-dialog>
 
@@ -37,7 +38,7 @@
     Daily Activities
   </button>
   <button type="button" [class.active]="activeTab === 'learning'" (click)="select('learning')">
-    Technical Learning
+    Learning
   </button>
 </nav>
 
