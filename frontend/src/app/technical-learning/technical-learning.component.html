@@ -1,5 +1,5 @@
 <section class="panel" *ngIf="view === 'active'">
-  <h2>Add Technical Learning Topic</h2>
+  <h2>Add Learning Topic</h2>
   <form class="form-grid" (ngSubmit)="save()">
     <label>
       <span>Topic *</span>
@@ -28,7 +28,7 @@
 
 <section class="panel">
   <div class="panel-head">
-    <h2>{{ view === 'archived' ? 'Archived Topics' : 'All Learning Topics' }}</h2>
+    <h2>{{ view === 'archived' ? 'Archived Learning Topics' : 'All Learning' }}</h2>
     <div class="head-tools">
       <div class="seg">
         <button type="button" [class.active]="view === 'active'" (click)="setView('active')">Active</button>
