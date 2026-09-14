@@ -34,6 +34,13 @@ export interface TodoRequest {
   accomplished: boolean;
 }
 
+export interface TodoReminder {
+  todoId: number;
+  todoName: string;
+  dueAt: string;
+  createdAt: string;
+}
+
 export interface DailyActivity {
   id: number;
   activityName: string;

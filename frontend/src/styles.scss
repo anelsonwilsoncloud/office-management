@@ -224,6 +224,24 @@ select:focus {
       color: #137333;
     }
   }
+
+  &.reminder {
+    color: #b7791f;
+    border-color: #f6d29b;
+
+    &:hover {
+      background: #fff7e6;
+      border-color: #eebf7a;
+      color: #8a5a00;
+    }
+
+    &.active {
+      background: #fff7e6;
+      border-color: #e6b76e;
+      color: #8a5a00;
+      box-shadow: 0 0 0 2px rgba(234, 179, 8, 0.15);
+    }
+  }
 }
 
 .grid-scroll {
