@@ -161,6 +161,71 @@ select:focus {
   background: #fce8e6;
 }
 
+.icon-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid #dadce0;
+  border-radius: 6px;
+  background: #fff;
+  color: #5f6368;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.15s;
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+    display: block;
+  }
+
+  &:hover {
+    background: #f1f3f4;
+    border-color: #c5c9d0;
+    color: #202124;
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  &.edit {
+    color: #1a73e8;
+    border-color: #c9daf8;
+
+    &:hover {
+      background: #e8f0fe;
+      border-color: #aecbfa;
+      color: #1558b0;
+    }
+  }
+
+  &.danger {
+    color: #d93025;
+    border-color: #f3c0bc;
+
+    &:hover {
+      background: #fce8e6;
+      border-color: #ea8c84;
+      color: #a50e0e;
+    }
+  }
+
+  &.restore {
+    color: #1e8e3e;
+    border-color: #b7dfc1;
+
+    &:hover {
+      background: #e6f4ea;
+      border-color: #8bc79a;
+      color: #137333;
+    }
+  }
+}
+
 .grid-scroll {
   max-height: 360px;
   overflow-y: auto;
