@@ -137,10 +137,12 @@
           <div class="team-list" *ngIf="!teamLoading">
             <div class="team-row" *ngFor="let team of teamOptions">
               <div class="team-info">
-                <strong>{{ team.name }}</strong>
-                <span class="team-badge default" *ngIf="team.isDefault">Default</span>
-                <span class="team-badge custom" *ngIf="!team.isDefault">Custom</span>
-                <span class="team-badge usage" *ngIf="team.inUseCount > 0">{{ team.inUseCount }} used</span>
+                <strong class="team-name">{{ team.name }}</strong>
+                <div class="team-meta">
+                  <span class="team-badge default" *ngIf="team.isDefault">Built-in</span>
+                  <span class="team-badge custom" *ngIf="!team.isDefault">Custom</span>
+                  <span class="team-badge usage" *ngIf="team.inUseCount > 0">In use: {{ team.inUseCount }}</span>
+                </div>
               </div>
               <button type="button" class="team-remove-btn" [disabled]="!team.removable || teamRemoving === team.name" (click)="removeTeam(team)">
                 {{ teamRemoving === team.name ? 'Removing...' : 'Remove' }}
