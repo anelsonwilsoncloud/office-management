@@ -17,7 +17,7 @@ type SortDir = 'asc' | 'desc';
 export class TodosComponent implements OnInit {
   readonly priorities: Priority[] = ['LOW', 'MEDIUM', 'HIGH'];
   private readonly priorityRank: Record<Priority, number> = { LOW: 0, MEDIUM: 1, HIGH: 2 };
-  readonly reminderHourOptions = [1, 2, 3, 4, 6, 8, 12, 24, 48];
+  readonly reminderHourOptions = Array.from({ length: 18 }, (_, index) => (index + 1) * 0.5);
 
   todos: Todo[] = [];
   pastPending: Todo[] = [];
@@ -34,7 +34,7 @@ export class TodosComponent implements OnInit {
 
   prioritySort: SortDir | null = null;
   reminderMenuTodoId: number | null = null;
-  reminderHours = 1;
+  reminderHours = 0.5;
 
   form: TodoRequest = this.emptyForm();
   editingId: number | null = null;
@@ -206,9 +206,9 @@ export class TodosComponent implements OnInit {
     }
     const reminder = this.reminderService.get(todo.id);
     this.reminderMenuTodoId = todo.id;
-    this.reminderHours = reminder ? this.hoursUntil(reminder.dueAt) : 1;
-    if (this.reminderHours < 1) {
-      this.reminderHours = 1;
+    this.reminderHours = reminder ? this.hoursUntil(reminder.dueAt) : 0.5;
+    if (this.reminderHours < 0.5) {
+    this.reminderHours = 0.5;
     }
   }
 
@@ -241,6 +241,14 @@ export class TodosComponent implements OnInit {
     return `${minutes}m`;
   }
 
+  reminderTooltip(todoId: number): string {
+    const reminder = this.reminderService.get(todoId);
+    if (!reminder) {
+      return '';
+    }
+    return `Reminder due at ${new Date(reminder.dueAt).toLocaleString()}`;
+  }
+
   async setReminder(todo: Todo): Promise<void> {
     this.error = '';
     try {
@@ -258,7 +266,7 @@ export class TodosComponent implements OnInit {
 
   private hoursUntil(dueAt: string): number {
     const diff = new Date(dueAt).getTime() - Date.now();
-    return Math.max(1, Math.round(diff / 3600000));
+    return Math.max(0.5, Math.round(diff / 1800000) / 2);
   }
 
   private emptyForm(): TodoRequest {

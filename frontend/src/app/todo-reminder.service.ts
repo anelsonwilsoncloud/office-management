@@ -44,8 +44,8 @@ export class TodoReminderService {
   async schedule(todo: Todo, hoursFromNow: number): Promise<void> {
     this.init();
     const hours = Number(hoursFromNow);
-    if (!Number.isFinite(hours) || hours < 1) {
-      throw new Error('Please choose at least 1 hour.');
+    if (!Number.isFinite(hours) || hours < 0.5 || Math.abs(hours * 2 - Math.round(hours * 2)) > 1e-6) {
+      throw new Error('Please choose a reminder in 30-minute steps.');
     }
 
     const permission = await this.ensureNotificationPermission();

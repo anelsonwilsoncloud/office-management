@@ -125,7 +125,7 @@
                 <label>
                   Remind in
                   <select [(ngModel)]="reminderHours" [name]="'reminderHours' + t.id">
-                    <option *ngFor="let h of reminderHourOptions" [ngValue]="h">{{ h }} hour{{ h === 1 ? '' : 's' }}</option>
+                    <option *ngFor="let h of reminderHourOptions" [ngValue]="h">{{ h }}h</option>
                   </select>
                 </label>
                 <button type="button" class="btn small primary" (click)="setReminder(t)">Set</button>
@@ -135,8 +135,8 @@
                 </button>
               </div>
 
-              <div class="reminder-chip" *ngIf="reminderFor(t.id)">
-                <span>Reminder in {{ reminderLabel(t.id) }}</span>
+              <div class="reminder-chip" *ngIf="reminderFor(t.id)" [title]="reminderTooltip(t.id)">
+                <span class="reminder-time">{{ reminderLabel(t.id) }}</span>
               </div>
             </div>
           </td>
